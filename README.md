@@ -4,6 +4,8 @@ A focused sales CRM: leads with automatic scoring, a drag-and-drop deal pipeline
 
 Powered by Lasan Labs.
 
+📘 **New to the app? Read the [User Manual](USER_MANUAL.md)** for a guide to every screen, lead scoring, the pipeline, tasks, roles and settings.
+
 ## Features
 
 | Area | What it does |
