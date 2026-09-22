@@ -14,6 +14,8 @@ const { deals, stages, contacts, companies, users, activities } = schema;
 
 export const metadata = { title: "Deal" };
 
+const isRecent = (date) => Date.now() - new Date(date).getTime() < 30 * 86400000;
+
 function Detail({ icon: Icon, label, children }) {
   return (
     <div className="flex items-start gap-3 py-2.5">
@@ -115,7 +117,7 @@ export default async function DealPage({ params }) {
               <Detail icon={Clock} label="Created">
                 {longDate(deal.createdAt)}
                 <span suppressHydrationWarning className="ml-1.5 text-ink-3">
-                  {Date.now() - new Date(deal.createdAt).getTime() < 30 * 86400000 && `· ${relativeTime(deal.createdAt)}`}
+                  {isRecent(deal.createdAt) && `· ${relativeTime(deal.createdAt)}`}
                 </span>
               </Detail>
             </div>

@@ -125,19 +125,13 @@ function CommandPalette({ open, onClose }) {
   const [pending, startTransition] = useTransition();
   const inputRef = useRef(null);
 
+  // The palette remounts on every open (see `key` in Shell), so state starts fresh.
   useEffect(() => {
-    if (!open) return;
-    setQuery("");
-    setResults([]);
-    setActive(0);
-    setTimeout(() => inputRef.current?.focus(), 10);
+    if (open) setTimeout(() => inputRef.current?.focus(), 10);
   }, [open]);
 
   useEffect(() => {
-    if (query.trim().length < 2) {
-      setResults([]);
-      return;
-    }
+    if (query.trim().length < 2) return; // quick actions show instead of results
     const t = setTimeout(() => {
       startTransition(async () => {
         setResults(await searchAll(query));
@@ -251,7 +245,14 @@ function CommandPalette({ open, onClose }) {
 
 export function Shell({ user, orgName, children }) {
   const [drawer, setDrawer] = useState(false);
-  const [palette, setPalette] = useState(false);
+  const [palette, setPaletteOpen] = useState(false);
+  const [paletteSession, setPaletteSession] = useState(0);
+  const setPalette = (next) =>
+    setPaletteOpen((was) => {
+      const open = typeof next === "function" ? next(was) : next;
+      if (open && !was) setPaletteSession((n) => n + 1);
+      return open;
+    });
   const pathname = usePathname();
 
   useEffect(() => {
@@ -333,7 +334,7 @@ export function Shell({ user, orgName, children }) {
         <PoweredBy />
       </div>
 
-      <CommandPalette open={palette} onClose={() => setPalette(false)} />
+      <CommandPalette key={paletteSession} open={palette} onClose={() => setPalette(false)} />
     </div>
   );
 }
