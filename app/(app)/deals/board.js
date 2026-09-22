@@ -137,7 +137,12 @@ export function DealsBoard({ stages, deals: initialDeals, currency, options }) {
   const [createStage, setCreateStage] = useState(params.get("new") === "1" ? "" : null);
   const [, startTransition] = useTransition();
 
-  useEffect(() => setDeals(initialDeals), [initialDeals]);
+  // Resync local (optimistic) state when the server sends fresh deals.
+  const [syncedFrom, setSyncedFrom] = useState(initialDeals);
+  if (syncedFrom !== initialDeals) {
+    setSyncedFrom(initialDeals);
+    setDeals(initialDeals);
+  }
   useEffect(() => {
     if (!toast) return;
     const t = setTimeout(() => setToast(null), 3200);

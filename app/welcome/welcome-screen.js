@@ -29,17 +29,23 @@ const TAGLINES = [
 
 const CONFETTI_COLORS = ["var(--s1)", "var(--s2)", "var(--s3)", "var(--s4)", "var(--s5)", "var(--s7)"];
 
+// Deterministic 0–1 noise so renders stay pure (and identical on every render).
+const noise = (i, k) => {
+  const v = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453;
+  return v - Math.floor(v);
+};
+
 function Confetti() {
   const pieces = useMemo(
     () =>
       Array.from({ length: 70 }, (_, i) => ({
         id: i,
-        x: (Math.random() - 0.5) * 900,
-        y: -Math.random() * 520 - 120,
-        r: Math.random() * 720 - 360,
-        w: 6 + Math.random() * 6,
-        h: 8 + Math.random() * 10,
-        delay: Math.random() * 0.25,
+        x: (noise(i, 1) - 0.5) * 900,
+        y: -noise(i, 2) * 520 - 120,
+        r: noise(i, 3) * 720 - 360,
+        w: 6 + noise(i, 4) * 6,
+        h: 8 + noise(i, 5) * 10,
+        delay: noise(i, 6) * 0.25,
         color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
       })),
     []

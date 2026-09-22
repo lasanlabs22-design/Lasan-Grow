@@ -9,6 +9,8 @@ import { TaskBoard, NewTaskButton } from "./task-list";
 
 export const metadata = { title: "Tasks" };
 
+const daysAgo = (n) => new Date(Date.now() - n * 86400000);
+
 const { activities, deals, contacts } = schema;
 const TYPES = [
   ["all", "All"],
@@ -26,7 +28,7 @@ export default async function TasksPage({ searchParams }) {
 
   const base = [eq(activities.orgId, org.id), ne(activities.type, "note")];
   if (type !== "all") base.push(eq(activities.type, type));
-  const weekAgo = new Date(Date.now() - 7 * 86400000);
+  const weekAgo = daysAgo(7);
 
   const select = {
     id: activities.id,
