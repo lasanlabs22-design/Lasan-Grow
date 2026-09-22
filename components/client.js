@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+
+const noopSubscribe = () => () => {};
 import { createPortal } from "react-dom";
 import { useFormStatus } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
@@ -25,6 +27,8 @@ export function Modal({ trigger, title, description, children, open: openProp, o
   const open = controlled ? openProp : openState;
   const close = () => (controlled ? onClose?.() : setOpenState(false));
   const panelRef = useRef(null);
+  // Portals only exist in the browser; rendering one during hydration would mismatch the server HTML.
+  const mounted = useSyncExternalStore(noopSubscribe, () => true, () => false);
 
   useEffect(() => {
     if (!open) return;
@@ -43,7 +47,7 @@ export function Modal({ trigger, title, description, children, open: openProp, o
   return (
     <>
       {trigger?.(() => setOpenState(true))}
-      {typeof document !== "undefined" &&
+      {mounted &&
         createPortal(
           <AnimatePresence>
             {open && (
