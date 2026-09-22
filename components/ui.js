@@ -14,6 +14,7 @@ const BUTTON_VARIANTS = {
   secondary: "border border-line bg-surface text-ink hover:bg-surface-2 hover:border-line-strong",
   ghost: "text-ink-2 hover:bg-surface-2 hover:text-ink",
   danger: "bg-bad-bg text-bad hover:brightness-95",
+  success: "bg-[#0a8a0a] text-white hover:opacity-90 shadow-card",
 };
 const BUTTON_SIZES = {
   sm: "h-8 px-3 text-[13px]",
