@@ -169,6 +169,14 @@ body {
   background-size: 22px 22px;
 }
 
+/* Heatmap cells carry both theme steps; pick per theme. */
+[data-heat] {
+  background: var(--heat-l);
+}
+.dark [data-heat] {
+  background: var(--heat-d);
+}
+
 /* Recharts: kill default focus outline on SVG surface */
 .recharts-wrapper *:focus {
   outline: none;
