@@ -117,32 +117,41 @@ function SidebarBody({ user, orgName, onNavigate }) {
   );
 }
 
+// Bolds the parts of `text` that match any word of the query.
+function Highlight({ text, query }) {
+  const words = query.trim().split(/\s+/).filter(Boolean).map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  if (!words.length) return text;
+  const re = new RegExp(`(${words.join("|")})`, "gi");
+  return text.split(re).map((part, i) => (i % 2 ? <mark key={i} className="bg-transparent font-semibold text-ink">{part}</mark> : part));
+}
+
 function CommandPalette({ open, onClose }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
+  const [searched, setSearched] = useState("");
   const [active, setActive] = useState(0);
   const [pending, startTransition] = useTransition();
-  const inputRef = useRef(null);
-
-  // The palette remounts on every open (see `key` in Shell), so state starts fresh.
-  useEffect(() => {
-    if (open) setTimeout(() => inputRef.current?.focus(), 10);
-  }, [open]);
+  const latest = useRef(0);
+  const term = query.trim();
 
   useEffect(() => {
-    if (query.trim().length < 2) return; // quick actions show instead of results
+    if (term.length < 2) return; // quick actions show instead of results
     const t = setTimeout(() => {
+      const id = ++latest.current;
       startTransition(async () => {
-        setResults(await searchAll(query));
+        const found = await searchAll(term);
+        if (id !== latest.current) return; // a newer search has started; drop this answer
+        setResults(found);
+        setSearched(term);
         setActive(0);
       });
-    }, 160);
+    }, 120);
     return () => clearTimeout(t);
-  }, [query]);
+  }, [term]);
 
   const items =
-    query.trim().length < 2
+    term.length < 2
       ? QUICK_ACTIONS.map((a) => ({ ...a, type: "Action", id: a.href }))
       : results;
 
@@ -190,7 +199,8 @@ function CommandPalette({ open, onClose }) {
             <div className="flex items-center gap-3 border-b border-line px-4">
               <Search size={17} className="text-ink-3" />
               <input
-                ref={inputRef}
+                // The palette remounts on every open (see `key` in Shell), so focus is immediate and state starts fresh.
+                autoFocus
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={onKeyDown}
@@ -201,7 +211,7 @@ function CommandPalette({ open, onClose }) {
               {pending && <span className="h-4 w-4 animate-spin rounded-full border-2 border-line-strong border-t-ink" />}
             </div>
             <ul className="max-h-[50vh] overflow-y-auto p-2" role="listbox">
-              {query.trim().length < 2 && (
+              {term.length < 2 && (
                 <li className="px-3 pb-1 pt-2 text-[11px] font-medium uppercase tracking-wider text-ink-3">Quick actions</li>
               )}
               {items.map((item, i) => {
@@ -223,7 +233,7 @@ function CommandPalette({ open, onClose }) {
                         <span className="w-16 shrink-0 text-[11px] font-medium uppercase tracking-wider text-ink-3">{item.type}</span>
                       )}
                       <span className="min-w-0 flex-1 truncate">
-                        {item.label}
+                        {item.type === "Action" ? item.label : <Highlight text={item.label} query={searched} />}
                         {item.sub && <span className="ml-2 text-ink-3">{item.sub}</span>}
                       </span>
                       {i === active && <CornerDownLeft size={14} className="text-ink-3" />}
@@ -232,8 +242,8 @@ function CommandPalette({ open, onClose }) {
                   </li>
                 );
               })}
-              {query.trim().length >= 2 && !pending && results.length === 0 && (
-                <li className="px-3 py-8 text-center text-sm text-ink-3">No matches for “{query}”</li>
+              {term.length >= 2 && !pending && searched === term && results.length === 0 && (
+                <li className="px-3 py-8 text-center text-sm text-ink-3">No matches for “{term}”</li>
               )}
             </ul>
           </motion.div>

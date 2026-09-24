@@ -83,8 +83,12 @@ On mobile, tap the **☰ menu** in the top-left to open the sidebar.
 Press **Ctrl + K** (or **⌘ + K** on Mac), or click **Search or create…** in the top bar.
 
 - **Before you type**, it shows quick actions: *New deal, New lead, New contact, New company, New task*.
-- **Type 2+ characters** to search deals, contacts, companies and leads at once.
+- **Type 2+ characters** to search deals, contacts, companies and leads at once. Several words narrow it down, in any order: *aarav fernandes*, *fernandes aarav* or *aarav northwind* all find Aarav Fernandes at Northwind. Matching words are shown in bold.
 - Use **↑ / ↓** to move, **Enter** to open, **Esc** to close.
+
+### Searching lists
+
+The search box on **Leads**, **Deals → List**, **Contacts** and **Companies** filters as you type; there's no need to press Enter. It works with several words in any order and keeps your current tab or sort. Click **×** or press **Esc** to clear it.
 
 ### Light and dark mode
 
@@ -180,7 +184,7 @@ Won and lost deals leave the board. Find them in the **List** view.
 
 ### The list view
 
-Click **List** to see deals in a table. Filter by **Open / Won / Lost / All** and search by deal name.
+Click **List** to see deals in a table. Filter by **Open / Won / Lost / All** and search by deal name, company or contact.
 
 ### Creating or editing a deal
 
@@ -202,7 +206,7 @@ Click any deal to open it.
 
 **Contacts** lists everyone you sell to, with their company, email, phone, open-deal value and **last touch** (the most recent completed activity with them).
 
-- **Search** by name, email or company.
+- **Search** by full name, email, phone, job title or company.
 - **Add:** click **New contact**.
 - **Open a contact** to see open pipeline and lifetime won value, their details, their deals and their full activity timeline.
 - Use the **Email** and **Call** buttons to open your mail app or dialler.
@@ -212,7 +216,7 @@ Click any deal to open it.
 
 ## 8. Companies
 
-**Companies** shows each account as a card with industry, city, number of people, open pipeline and revenue won. Sort by **Open pipeline**, **Revenue won** or **Name**, and search by name.
+**Companies** shows each account as a card with industry, city, number of people, open pipeline and revenue won. Sort by **Open pipeline**, **Revenue won** or **Name**, and search by name, website, industry or city.
 
 Open a company to see:
 

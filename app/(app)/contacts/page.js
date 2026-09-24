@@ -1,11 +1,13 @@
 import Link from "next/link";
-import { and, asc, eq, ilike, or, sql } from "drizzle-orm";
-import { Search, Users } from "lucide-react";
+import { and, asc, eq, sql } from "drizzle-orm";
+import { Users } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { getDb, schema } from "@/lib/db";
 import { fullName, money, relativeTime } from "@/lib/format";
-import { Avatar, Card, EmptyState, Input, PageHeader, Table, Td, Th } from "@/components/ui";
+import { matchWords } from "@/lib/search";
+import { Avatar, Card, EmptyState, PageHeader, Table, Td, Th } from "@/components/ui";
 import { RecordFormButton } from "@/components/record-forms";
+import { LiveSearch } from "@/components/live-search";
 
 export const metadata = { title: "Contacts" };
 
@@ -18,12 +20,7 @@ export default async function ContactsPage({ searchParams }) {
   const db = await getDb();
 
   const filters = [eq(contacts.orgId, org.id)];
-  if (q) {
-    const like = `%${q.replace(/[%_]/g, "\\$&")}%`;
-    filters.push(
-      or(ilike(contacts.firstName, like), ilike(contacts.lastName, like), ilike(contacts.email, like), ilike(companies.name, like))
-    );
-  }
+  if (q) filters.push(matchWords(q, [contacts.firstName, contacts.lastName, contacts.email, contacts.phone, contacts.title, companies.name]));
 
   const [rows, companyOptions] = await Promise.all([
     db
@@ -56,10 +53,7 @@ export default async function ContactsPage({ searchParams }) {
 
       <Card>
         <div className="flex items-center justify-end border-b border-line p-4">
-          <form className="relative w-full sm:w-72">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3" />
-            <Input name="q" defaultValue={q} placeholder="Search name, email or company…" className="h-9 pl-9" />
-          </form>
+          <LiveSearch path="/contacts" q={q} placeholder="Search name, email or company…" className="w-full sm:w-72" />
         </div>
         {rows.length === 0 ? (
           <EmptyState icon={Users} title={q ? "No one matches that" : "No contacts yet"} description="Add the people you're talking to — or convert a lead." />

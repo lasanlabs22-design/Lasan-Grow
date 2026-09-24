@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { and, desc, eq, ilike, ne, or, sql } from "drizzle-orm";
-import { Search } from "lucide-react";
+import { and, desc, eq, ne, sql } from "drizzle-orm";
 import { requireUser } from "@/lib/auth";
 import { getDb, schema } from "@/lib/db";
 import { money } from "@/lib/format";
-import { Card, Input, PageHeader, cx } from "@/components/ui";
+import { matchWords } from "@/lib/search";
+import { Card, PageHeader, cx } from "@/components/ui";
+import { LiveSearch } from "@/components/live-search";
 import { LeadsTable, NewLeadButton } from "./leads-table";
 
 export const metadata = { title: "Leads" };
@@ -30,10 +31,7 @@ export default async function LeadsPage({ searchParams }) {
   const filters = [eq(leads.orgId, org.id)];
   if (status === "active") filters.push(ne(leads.status, "converted"), ne(leads.status, "unqualified"));
   else filters.push(eq(leads.status, status));
-  if (q) {
-    const like = `%${q.replace(/[%_]/g, "\\$&")}%`;
-    filters.push(or(ilike(leads.name, like), ilike(leads.companyName, like), ilike(leads.email, like)));
-  }
+  if (q) filters.push(matchWords(q, [leads.name, leads.companyName, leads.email, leads.phone]));
 
   const [rows, [stats]] = await Promise.all([
     db.select().from(leads).where(and(...filters)).orderBy(desc(leads.score), desc(leads.createdAt)).limit(300),
@@ -89,11 +87,7 @@ export default async function LeadsPage({ searchParams }) {
               </Link>
             ))}
           </div>
-          <form className="relative w-full lg:w-64">
-            <input type="hidden" name="status" value={status} />
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3" />
-            <Input name="q" defaultValue={q} placeholder="Search leads…" className="h-9 pl-9" />
-          </form>
+          <LiveSearch path="/leads" q={q} params={{ status }} placeholder="Search leads…" className="w-full lg:w-64" />
         </div>
         <LeadsTable leads={rows} currency={org.currency} openId={typeof params.open === "string" ? params.open : null} />
       </Card>
