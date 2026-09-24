@@ -1,11 +1,13 @@
 import Link from "next/link";
-import { and, desc, eq, ilike } from "drizzle-orm";
-import { Columns3, List, Plus, Search } from "lucide-react";
+import { and, desc, eq } from "drizzle-orm";
+import { Columns3, List, Plus } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { getDb, schema } from "@/lib/db";
 import { getFormOptions } from "@/lib/queries/options";
 import { money, shortDate, longDate, fullName } from "@/lib/format";
-import { Badge, Card, EmptyState, Input, LinkButton, PageHeader, Table, Td, Th, cx } from "@/components/ui";
+import { matchWords } from "@/lib/search";
+import { Badge, Card, EmptyState, LinkButton, PageHeader, Table, Td, Th, cx } from "@/components/ui";
+import { LiveSearch } from "@/components/live-search";
 import { DealsBoard } from "./board";
 
 export const metadata = { title: "Deals" };
@@ -16,7 +18,7 @@ async function loadDeals(orgId, { status, q }) {
   const db = await getDb();
   const filters = [eq(deals.orgId, orgId)];
   if (status && status !== "all") filters.push(eq(deals.status, status));
-  if (q) filters.push(ilike(deals.title, `%${q.replace(/[%_]/g, "\\$&")}%`));
+  if (q) filters.push(matchWords(q, [deals.title, companies.name, contacts.firstName, contacts.lastName]));
   const rows = await db
     .select({
       id: deals.id,
@@ -118,12 +120,7 @@ export default async function DealsPage({ searchParams }) {
                 </Link>
               ))}
             </div>
-            <form className="relative w-full sm:w-64">
-              <input type="hidden" name="view" value="list" />
-              <input type="hidden" name="status" value={status} />
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3" />
-              <Input name="q" defaultValue={q} placeholder="Search deals…" className="h-9 pl-9" />
-            </form>
+            <LiveSearch path="/deals" q={q} params={{ view: "list", status }} placeholder="Search deals…" className="w-full sm:w-64" />
           </div>
           {rows.length === 0 ? (
             <EmptyState icon={Columns3} title="No deals here" description="Try another filter, or create a new deal." />

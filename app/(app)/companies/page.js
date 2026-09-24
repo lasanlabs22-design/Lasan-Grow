@@ -1,11 +1,13 @@
 import Link from "next/link";
-import { and, asc, eq, ilike, sql } from "drizzle-orm";
-import { Building2, MapPin, Search, Users } from "lucide-react";
+import { and, asc, eq, sql } from "drizzle-orm";
+import { Building2, MapPin, Users } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { getDb, schema } from "@/lib/db";
 import { money } from "@/lib/format";
-import { Card, EmptyState, Input, PageHeader, cx } from "@/components/ui";
+import { matchWords } from "@/lib/search";
+import { Card, EmptyState, PageHeader, cx } from "@/components/ui";
 import { RecordFormButton } from "@/components/record-forms";
+import { LiveSearch } from "@/components/live-search";
 
 export const metadata = { title: "Companies" };
 
@@ -33,7 +35,7 @@ export default async function CompaniesPage({ searchParams }) {
   const db = await getDb();
 
   const filters = [eq(companies.orgId, org.id)];
-  if (q) filters.push(ilike(companies.name, `%${q.replace(/[%_]/g, "\\$&")}%`));
+  if (q) filters.push(matchWords(q, [companies.name, companies.domain, companies.industry, companies.city]));
 
   // Drizzle drops the table prefix on single-table selects, so the outer row must be referenced explicitly.
   const companyRef = sql.raw(`"companies"."id"`);
@@ -81,11 +83,7 @@ export default async function CompaniesPage({ searchParams }) {
             </Link>
           ))}
         </div>
-        <form className="relative w-full sm:w-72">
-          <input type="hidden" name="sort" value={sort} />
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3" />
-          <Input name="q" defaultValue={q} placeholder="Search companies…" className="h-9 pl-9" />
-        </form>
+        <LiveSearch path="/companies" q={q} params={{ sort }} placeholder="Search companies…" className="w-full sm:w-72" />
       </div>
 
       {rows.length === 0 ? (
