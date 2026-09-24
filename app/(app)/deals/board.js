@@ -134,8 +134,16 @@ export function DealsBoard({ stages, deals: initialDeals, currency, options }) {
   const [dragging, setDragging] = useState(null);
   const [lostPrompt, setLostPrompt] = useState(null);
   const [toast, setToast] = useState(null);
-  const [createStage, setCreateStage] = useState(params.get("new") === "1" ? "" : null);
+  const wantsNew = params.get("new") === "1";
+  const [createStage, setCreateStage] = useState(wantsNew ? "" : null);
   const [, startTransition] = useTransition();
+
+  // "New deal" links to /deals?new=1; on the board itself that's a same-route navigation that doesn't remount, so open on change.
+  const [prevWantsNew, setPrevWantsNew] = useState(wantsNew);
+  if (wantsNew !== prevWantsNew) {
+    setPrevWantsNew(wantsNew);
+    if (wantsNew) setCreateStage("");
+  }
 
   // Resync local (optimistic) state when the server sends fresh deals.
   const [syncedFrom, setSyncedFrom] = useState(initialDeals);
