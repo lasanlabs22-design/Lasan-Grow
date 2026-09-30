@@ -54,21 +54,24 @@ The usual journey is: **Lead → (convert) → Contact + Company + Deal → Won 
 
 ### Sign in
 
-Go to `/login` and enter your email and password. After signing in you'll see the **welcome screen**, which shows your open pipeline, tasks due today and deals closing this week. Click **Enter your workspace** or press **Enter**.
+Go to `/login` and enter your email and password. After signing in you'll see the **welcome screen**, which shows your open pipeline, tasks due today and deals closing this week. Click **Go to dashboard** or press **Enter**.
 
 ### Sign out
 
-Click the **sign-out icon** next to your name at the bottom of the sidebar.
+Click your **avatar** at the top-right of the blue bar, then **Sign out**.
 
 ---
 
 ## 3. Finding your way around
 
-### Sidebar
+### Layout
+
+Every page has a dark blue **bar across the top** with the product name, the global **search box**, the theme switch and your **avatar** (account menu). Below it, the **navigation on the left** shows your workspace and the modules; the page you are on is marked with a blue bar.
+
 
 | Item | What it's for |
 | --- | --- |
-| **Dashboard** | Your sales pulse: KPIs and charts |
+| **Dashboard** | Sales dashboard: KPIs and charts |
 | **Leads** | New enquiries, scored and ready to qualify |
 | **Deals** | The pipeline board and list |
 | **Contacts** | The people you sell to |
@@ -76,11 +79,11 @@ Click the **sign-out icon** next to your name at the bottom of the sidebar.
 | **Tasks** | Your follow-up inbox |
 | **Settings** | Profile, workspace, pipeline and team |
 
-On mobile, tap the **☰ menu** in the top-left to open the sidebar.
+On mobile, tap the **☰ menu** in the top-left to open the navigation, and the **magnifier** to search.
 
 ### Search and quick-create (`Ctrl + K`)
 
-Press **Ctrl + K** (or **⌘ + K** on Mac), or click **Search or create…** in the top bar.
+Press **Ctrl + K** (or **⌘ + K** on Mac), or click **Search or create** in the top bar.
 
 - **Before you type**, it shows quick actions: *New deal, New lead, New contact, New company, New task*.
 - **Type 2+ characters** to search deals, contacts, companies and leads at once. Several words narrow it down, in any order: *aarav fernandes*, *fernandes aarav* or *aarav northwind* all find Aarav Fernandes at Northwind. Matching words are shown in bold.
@@ -90,9 +93,9 @@ Press **Ctrl + K** (or **⌘ + K** on Mac), or click **Search or create…** in 
 
 The search box on **Leads**, **Deals → List**, **Contacts** and **Companies** filters as you type; there's no need to press Enter. It works with several words in any order and keeps your current tab or sort. Click **×** or press **Esc** to clear it.
 
-### Light and dark mode
+### White and black themes
 
-Use the **sun/moon toggle** in the top-right corner, or choose **Light / Dark / System** under **Settings → Appearance**.
+Lasan Grow opens in the **white theme**. Use the **moon/sun button** in the top bar to switch to the **black theme** and back, or choose **White / Black / Match my device** under **Settings → Appearance**. Your choice is remembered on that browser.
 
 ---
 
@@ -263,7 +266,7 @@ In the timeline, **tick the checkbox** to complete an item (tick again to reopen
 | --- | --- | --- |
 | **Profile** | Change your display name | Everyone |
 | **Password** | Change your password (requires the current one) | Everyone |
-| **Appearance** | Light, Dark or System theme | Everyone |
+| **Appearance** | White, Black or Match my device theme | Everyone |
 | **Workspace** | Rename the workspace; change currency | Owner, Admin |
 | **Pipeline stages** | Rename stages, set win %, reorder (↑ ↓), add or delete stages | Owner, Admin |
 | **Team** | See members; add a teammate; remove a member | Owner, Admin (to manage) |
