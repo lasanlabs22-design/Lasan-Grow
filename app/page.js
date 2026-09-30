@@ -76,7 +76,7 @@ function ProductPreview() {
           <p className="text-[13px] font-semibold">Open deals</p>
           <div className="mt-2 grid grid-cols-3 gap-2">
             {[["Open pipeline", "₹14.5L"], ["Win rate", "58%"], ["Due today", "6"]].map(([k, v]) => (
-              <div key={k} className="rounded-sm border border-line border-t-2 border-t-brand bg-surface p-2">
+              <div key={k} className="rounded-sm border border-line top-rule bg-surface p-2">
                 <p className="text-[10px] text-ink-3">{k}</p>
                 <p className="text-sm font-semibold">{v}</p>
               </div>

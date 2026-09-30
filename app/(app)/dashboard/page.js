@@ -32,7 +32,7 @@ function Delta({ value }) {
 
 function Kpi({ label, children, footer, spark }) {
   return (
-    <Card className="border-t-[3px] border-t-brand p-4">
+    <Card className="top-rule p-4">
       <div className="flex items-start justify-between gap-2">
         <p className="text-[13px] font-semibold text-ink-2">{label}</p>
         {spark}

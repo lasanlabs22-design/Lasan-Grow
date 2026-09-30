@@ -25,7 +25,7 @@ const rise = (delay) => ({
 
 function Stat({ icon: Icon, label, children, delay }) {
   return (
-    <motion.div {...rise(delay)} className="rounded-md border border-line border-t-[3px] border-t-brand bg-surface p-4 text-left shadow-card">
+    <motion.div {...rise(delay)} className="rounded-md border border-line top-rule bg-surface p-4 text-left shadow-card">
       <div className="flex items-center gap-2 text-[13px] font-semibold text-ink-2">
         <Icon size={15} className="text-brand" /> {label}
       </div>

@@ -25,7 +25,7 @@ export function LoginForm() {
         <Input name="email" type="email" autoComplete="email" required defaultValue={state?.values?.email} placeholder="you@company.com" />
       </Field>
       <Field label="Password">
-        <Input name="password" type="password" autoComplete="current-password" required placeholder="••••••••" />
+        <Input name="password" type="password" autoComplete="current-password" required />
       </Field>
       <SubmitButton size="lg" className="w-full" pendingText="Signing in…">
         Sign in
