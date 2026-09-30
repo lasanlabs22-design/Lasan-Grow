@@ -50,10 +50,10 @@ export default async function SettingsPage() {
         <SettingsSection title="Profile" description="How you appear to your team.">
           <ProfileForm name={user.name} email={user.email} />
         </SettingsSection>
-        <SettingsSection title="Password" description="Use 8 or more characters.">
+        <SettingsSection title="Password" description="At least 8 characters, with a letter and a number. Changing it signs out your other devices.">
           <PasswordForm />
         </SettingsSection>
-        <SettingsSection title="Appearance" description="Light, dark, or follow your system.">
+        <SettingsSection title="Appearance" description="White, black, or match your device. Remembered on this browser.">
           <AppearancePicker />
         </SettingsSection>
         <SettingsSection title="Workspace" description="Name and the currency used for every deal and chart.">
