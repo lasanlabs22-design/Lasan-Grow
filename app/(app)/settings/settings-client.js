@@ -93,9 +93,9 @@ export function AppearancePicker() {
   const { theme, setTheme } = useTheme();
   const mounted = useSyncExternalStore(noop, () => true, () => false);
   const options = [
-    ["light", "Light", Sun],
-    ["dark", "Dark", Moon],
-    ["system", "System", Monitor],
+    ["light", "White", Sun],
+    ["dark", "Black", Moon],
+    ["system", "Match my device", Monitor],
   ];
   return (
     <div className="grid grid-cols-3 gap-3">
@@ -108,19 +108,19 @@ export function AppearancePicker() {
             onClick={() => setTheme(value)}
             aria-pressed={active}
             className={cx(
-              "flex flex-col items-center gap-2 rounded-xl border p-4 text-sm transition-all",
-              active ? "border-ink bg-surface-2 font-medium" : "border-line hover:border-line-strong"
+              "flex flex-col items-center gap-2 rounded-md border p-3 text-sm transition-colors",
+              active ? "border-brand bg-brand-soft font-semibold text-brand-ink shadow-[0_0_0_1px_var(--brand)]" : "border-line hover:border-line-strong"
             )}
           >
             <span
               className={cx(
-                "flex h-14 w-full items-end gap-1 rounded-lg border border-line p-2",
-                value === "dark" ? "bg-[#0a0a0a]" : value === "light" ? "bg-[#f7f7f5]" : "bg-gradient-to-r from-[#f7f7f5] from-50% to-[#0a0a0a] to-50%"
+                "flex h-14 w-full items-end gap-1 rounded-sm border border-line p-2",
+                value === "dark" ? "bg-[#111214]" : value === "light" ? "bg-[#f3f4f6]" : "bg-gradient-to-r from-[#f3f4f6] from-50% to-[#111214] to-50%"
               )}
               aria-hidden
             >
-              <span className="h-4 w-1/3 rounded bg-[#3987e5]" />
-              <span className="h-7 w-1/3 rounded bg-[#86b6ef]" />
+              <span className="h-4 w-1/3 rounded-sm bg-[#0f6cbd]" />
+              <span className="h-7 w-1/3 rounded-sm bg-[#86b6ef]" />
             </span>
             <span className="flex items-center gap-1.5">
               <Icon size={14} /> {label}

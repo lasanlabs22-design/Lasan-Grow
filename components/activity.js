@@ -48,7 +48,7 @@ export function ActivityComposer({ links }) {
               onClick={() => setType(t)}
               className={cx(
                 "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[13px] transition-colors",
-                type === t ? "bg-ink text-inverse" : "text-ink-2 hover:bg-surface-2"
+                type === t ? "bg-brand-soft font-semibold text-brand-ink" : "text-ink-2 hover:bg-surface-2"
               )}
             >
               <Icon size={14} /> {ACTIVITY_META[t].label}
@@ -100,7 +100,7 @@ export function ActivityTimeline({ items, emptyText = "No activity yet." }) {
             <span
               className={cx(
                 "relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border",
-                a.done ? "border-line bg-surface-2 text-ink-3" : "border-ink bg-surface text-ink"
+                a.done ? "border-line bg-surface-2 text-ink-3" : "border-brand bg-surface text-brand"
               )}
             >
               <Icon size={14} />
@@ -123,7 +123,7 @@ export function ActivityTimeline({ items, emptyText = "No activity yet." }) {
                       }
                       className={cx(
                         "flex h-6 w-6 items-center justify-center rounded-md border transition-colors",
-                        a.done ? "border-ink bg-ink text-inverse" : "border-line-strong hover:border-ink"
+                        a.done ? "border-brand bg-brand text-on-brand" : "border-line-strong hover:border-brand"
                       )}
                     >
                       {a.done && <Check size={13} />}

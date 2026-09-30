@@ -53,7 +53,7 @@ export function Modal({ trigger, title, description, children, open: openProp, o
             {open && (
               <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4">
                 <motion.div
-                  className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
+                  className="absolute inset-0 bg-black/40"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -69,13 +69,13 @@ export function Modal({ trigger, title, description, children, open: openProp, o
                   exit={{ opacity: 0, y: 16, scale: 0.98 }}
                   transition={{ type: "spring", stiffness: 380, damping: 32 }}
                   className={cx(
-                    "relative max-h-[92vh] w-full overflow-y-auto rounded-t-2xl border border-line bg-surface p-6 shadow-pop sm:rounded-2xl",
+                    "relative max-h-[92vh] w-full overflow-y-auto rounded-t-md border border-line bg-surface p-6 shadow-pop sm:rounded-md",
                     wide ? "sm:max-w-2xl" : "sm:max-w-lg"
                   )}
                 >
                   <div className="mb-5 flex items-start justify-between gap-4">
                     <div>
-                      <h2 className="font-display text-xl font-semibold tracking-tight">{title}</h2>
+                      <h2 className="text-lg font-semibold">{title}</h2>
                       {description && <p className="mt-1 text-sm text-ink-3">{description}</p>}
                     </div>
                     <button

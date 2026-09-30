@@ -78,11 +78,11 @@ export default async function CompanyPage({ params }) {
 
       <div className="mb-6 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
-          <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-ink font-display text-3xl font-semibold text-inverse">
+          <span className="flex h-14 w-14 items-center justify-center rounded-md bg-brand text-2xl font-semibold text-on-brand">
             {company.name.trim()[0]?.toUpperCase()}
           </span>
           <div>
-            <h1 className="font-display text-[28px] font-semibold leading-tight tracking-tight">{company.name}</h1>
+            <h1 className="text-[22px] font-semibold leading-tight">{company.name}</h1>
             <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-ink-3">
               {company.domain && (
                 <a href={`https://${company.domain}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-ink">

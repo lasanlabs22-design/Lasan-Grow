@@ -1,12 +1,15 @@
-import Link from "next/link";
 import {
   ArrowRight,
   BarChart3,
+  Building2,
   CheckCircle2,
+  CheckSquare,
   Columns3,
   Gauge,
+  LayoutDashboard,
   ListTodo,
-  Sparkles,
+  Magnet,
+  ShieldCheck,
   Users,
   Zap,
 } from "lucide-react";
@@ -17,145 +20,180 @@ import { LinkButton } from "@/components/ui";
 import { getCurrentUser } from "@/lib/auth";
 
 const FEATURES = [
-  { icon: Columns3, title: "Pipeline you can feel", body: "Drag deals across stages. Weighted value and stage totals update instantly." },
-  { icon: Gauge, title: "Lead scoring built in", body: "Every lead gets a 0–100 score so reps know who to call first." },
-  { icon: BarChart3, title: "Charts that answer questions", body: "Revenue trend, funnel conversion, win rate and source mix — no report builder needed." },
-  { icon: Users, title: "Contacts & companies", body: "One timeline per person and account, with every deal and follow-up attached." },
-  { icon: ListTodo, title: "Follow-ups that happen", body: "Calls, meetings and tasks with an overdue-first inbox. Nothing slips." },
-  { icon: Zap, title: "Fast, everywhere", body: "Keyboard-first, light & dark themes, and it loads before you finish blinking." },
+  { icon: Columns3, title: "Pipeline management", body: "Drag deals across stages. Weighted value and stage totals update instantly." },
+  { icon: Gauge, title: "Lead scoring", body: "Every lead gets a 0–100 score so reps know who to call first." },
+  { icon: BarChart3, title: "Sales analytics", body: "Revenue trend, funnel conversion, win rate and source mix, with no report builder needed." },
+  { icon: Users, title: "Contacts & accounts", body: "One timeline per person and company, with every deal and follow-up attached." },
+  { icon: ListTodo, title: "Activities & follow-ups", body: "Calls, meetings and tasks in an overdue-first inbox, so nothing slips." },
+  { icon: Zap, title: "Fast and keyboard-first", body: "Global search and quick create on Ctrl K, in a white or black theme." },
 ];
 
-const COMPARE = [
-  ["Set up in minutes, not weeks", true],
-  ["Clean UI with light & dark mode", true],
-  ["Forecasts & charts out of the box", true],
-  ["No per-module upsells", true],
+const ASSURANCES = [
+  "Set up for your company by the Lasan team",
+  "Each company's data kept in its own workspace",
+  "Forecasts and charts out of the box",
+  "No per-module upsells",
 ];
 
-const PREVIEW_STAGES = [
-  { name: "Qualified", cards: [["Pilot — Orbit Health", "₹1.2L"], ["Renewal — Terra Foods", "₹80K"]] },
-  { name: "Proposal", cards: [["Enterprise — Nimbus", "₹6.4L"], ["Expansion — Lumen", "₹2.1L"]] },
-  { name: "Negotiation", cards: [["Annual — Vertex Motors", "₹4.8L"]] },
+const PREVIEW_NAV = [
+  [LayoutDashboard, "Dashboard", true],
+  [Magnet, "Leads"],
+  [Columns3, "Deals"],
+  [Users, "Contacts"],
+  [Building2, "Companies"],
+  [CheckSquare, "Tasks"],
 ];
+
+const PREVIEW_ROWS = [
+  ["Enterprise plan — Nimbus Cloud", "Proposal sent", "₹6,40,000"],
+  ["Annual license — Vertex Motors", "Negotiation", "₹4,80,000"],
+  ["Expansion — Lumen Finance", "Demo scheduled", "₹2,10,000"],
+  ["Pilot — Orbit Health", "Qualified", "₹1,20,000"],
+];
+
+// An abstract, static picture of the app: the suite bar, navigation and a deals list.
+function ProductPreview() {
+  return (
+    <div className="overflow-hidden rounded-md border border-line bg-surface shadow-pop" aria-hidden>
+      <div className="flex h-9 items-center gap-2 bg-suite px-3 text-suite-ink">
+        <span className="h-4 w-4 rounded-sm bg-brand" />
+        <span className="text-xs font-semibold">Lasan Grow</span>
+        <span className="text-xs opacity-60">| Sales</span>
+        <span className="mx-auto hidden h-5 w-40 rounded-sm bg-white/15 sm:block" />
+      </div>
+      <div className="flex">
+        <div className="hidden w-36 shrink-0 space-y-0.5 border-r border-line p-2 sm:block">
+          {PREVIEW_NAV.map(([Icon, label, active]) => (
+            <div
+              key={label}
+              className={`flex items-center gap-2 rounded-sm px-2 py-1.5 text-[11px] ${active ? "bg-brand-soft font-semibold text-brand-ink" : "text-ink-2"}`}
+            >
+              <Icon size={12} /> {label}
+            </div>
+          ))}
+        </div>
+        <div className="min-w-0 flex-1 bg-bg p-3">
+          <p className="text-[13px] font-semibold">Open deals</p>
+          <div className="mt-2 grid grid-cols-3 gap-2">
+            {[["Open pipeline", "₹14.5L"], ["Win rate", "58%"], ["Due today", "6"]].map(([k, v]) => (
+              <div key={k} className="rounded-sm border border-line top-rule bg-surface p-2">
+                <p className="text-[10px] text-ink-3">{k}</p>
+                <p className="text-sm font-semibold">{v}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-2 overflow-hidden rounded-sm border border-line bg-surface text-[11px]">
+            <div className="grid grid-cols-[1fr_auto] gap-2 border-b border-line-strong bg-surface-2 px-2 py-1.5 font-semibold text-ink-2 sm:grid-cols-[1fr_7rem_5rem]">
+              <span>Deal</span>
+              <span className="hidden sm:block">Stage</span>
+              <span className="text-right">Value</span>
+            </div>
+            {PREVIEW_ROWS.map(([deal, stage, value]) => (
+              <div key={deal} className="grid grid-cols-[1fr_auto] gap-2 border-b border-line px-2 py-1.5 last:border-0 sm:grid-cols-[1fr_7rem_5rem]">
+                <span className="truncate text-brand-ink">{deal}</span>
+                <span className="hidden text-ink-2 sm:block">{stage}</span>
+                <span className="text-right tabular">{value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default async function Home() {
   const current = await getCurrentUser();
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
-      <div className="dot-grid pointer-events-none absolute inset-x-0 top-0 h-[720px] [mask-image:radial-gradient(ellipse_at_top,black_20%,transparent_70%)]" />
-
-      <header className="relative mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-        <Logo />
-        <nav className="flex items-center gap-2">
-          <ThemeToggle className="mr-1" />
-          {current ? (
-            <LinkButton href="/dashboard" size="sm">
-              Open dashboard <ArrowRight size={14} />
-            </LinkButton>
-          ) : (
-            <>
-              <LinkButton href="/login" variant="ghost" size="sm">
-                Sign in
+    <div className="min-h-screen bg-surface">
+      <header className="border-b border-line bg-surface">
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
+          <Logo product="Sales" />
+          <nav className="flex items-center gap-2">
+            <ThemeToggle />
+            {current ? (
+              <LinkButton href="/dashboard" size="sm">
+                Open Lasan Grow <ArrowRight size={14} />
               </LinkButton>
-              <LinkButton href="/signup" size="sm">
-                Get started
-              </LinkButton>
-            </>
-          )}
-        </nav>
+            ) : (
+              <>
+                <LinkButton href="/login" variant="secondary" size="sm">
+                  Sign in
+                </LinkButton>
+                <LinkButton href="/signup" size="sm" className="hidden sm:inline-flex">
+                  Get started
+                </LinkButton>
+              </>
+            )}
+          </nav>
+        </div>
       </header>
 
-      <main className="relative">
+      <main>
         {/* Hero */}
-        <section className="mx-auto max-w-4xl px-4 pb-16 pt-16 text-center sm:pt-24">
-          <span className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 text-xs text-ink-2 shadow-card">
-            <Sparkles size={13} /> The sales CRM that gets out of your way
-          </span>
-          <h1 className="mt-7 font-display text-[clamp(2.6rem,7vw,5.2rem)] font-semibold leading-[0.98] tracking-tight">
-            Grow revenue,
-            <br />
-            <span className="font-serif font-normal italic text-ink-2">not spreadsheets.</span>
-          </h1>
-          <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-ink-2">
-            Lasan Grow brings leads, deals, contacts and follow-ups into one calm, fast workspace — with the
-            insight to know exactly where your next win is coming from.
-          </p>
-          <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-            <LinkButton href={current ? "/dashboard" : "/signup"} size="lg" className="rounded-full px-6">
-              {current ? "Go to dashboard" : "Start free"} <ArrowRight size={16} />
-            </LinkButton>
-            {!current && (
-              <LinkButton href="/login" size="lg" variant="secondary" className="rounded-full px-6">
-                I have an account
-              </LinkButton>
-            )}
-          </div>
-        </section>
-
-        {/* Product preview */}
-        <section className="mx-auto max-w-5xl px-4">
-          <div className="rounded-[22px] border border-line bg-surface p-2 shadow-pop">
-            <div className="rounded-2xl border border-line bg-bg p-4 sm:p-6">
-              <div className="mb-4 flex items-center gap-1.5" aria-hidden>
-                <span className="h-2.5 w-2.5 rounded-full bg-surface-3" />
-                <span className="h-2.5 w-2.5 rounded-full bg-surface-3" />
-                <span className="h-2.5 w-2.5 rounded-full bg-surface-3" />
+        <section className="border-b border-line bg-bg">
+          <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1fr_1.15fr] lg:py-20">
+            <div>
+              <p className="text-sm font-semibold text-brand-ink">Lasan Grow Sales</p>
+              <h1 className="mt-3 text-[clamp(2rem,4.5vw,2.9rem)] font-semibold leading-[1.12]">
+                The sales CRM for teams that close.
+              </h1>
+              <p className="mt-4 max-w-lg text-base leading-relaxed text-ink-2">
+                Leads, deals, contacts, companies and follow-ups in one workspace, with the reporting to know
+                where your next win is coming from.
+              </p>
+              <div className="mt-7 flex flex-wrap items-center gap-3">
+                <LinkButton href={current ? "/dashboard" : "/login"} size="lg">
+                  {current ? "Go to dashboard" : "Sign in"} <ArrowRight size={16} />
+                </LinkButton>
+                {!current && (
+                  <LinkButton href="/signup" size="lg" variant="secondary">
+                    Get started
+                  </LinkButton>
+                )}
               </div>
-              <div className="grid gap-3 sm:grid-cols-3">
-                {PREVIEW_STAGES.map((s) => (
-                  <div key={s.name} className="rounded-xl bg-surface-2 p-3">
-                    <p className="mb-2.5 text-xs font-medium uppercase tracking-wider text-ink-3">{s.name}</p>
-                    <div className="space-y-2">
-                      {s.cards.map(([t, v]) => (
-                        <div key={t} className="rounded-lg border border-line bg-surface p-3 text-left shadow-card">
-                          <p className="text-[13px] font-medium">{t}</p>
-                          <p className="mt-1 font-mono text-xs text-ink-3">{v}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <p className="mt-5 flex items-center gap-2 text-xs text-ink-3">
+                <ShieldCheck size={14} className="text-good" /> Encrypted connections · Workspace-level data separation
+              </p>
             </div>
+            <ProductPreview />
           </div>
         </section>
 
         {/* Features */}
-        <section className="mx-auto max-w-6xl px-4 py-24 sm:px-6">
-          <h2 className="max-w-lg font-display text-4xl font-semibold tracking-tight">
-            Everything a sales team needs. <span className="text-ink-3">Nothing it doesn&apos;t.</span>
-          </h2>
-          <div className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
+        <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+          <h2 className="text-2xl font-semibold">Everything a sales team needs</h2>
+          <p className="mt-2 max-w-xl text-sm text-ink-2">The modules that actually move revenue, done properly, not dozens bolted on.</p>
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map(({ icon: Icon, title, body }) => (
-              <div key={title} className="bg-surface p-7">
-                <Icon size={20} className="text-ink" />
-                <h3 className="mt-5 font-semibold">{title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-3">{body}</p>
+              <div key={title} className="rounded-md border border-line bg-surface p-5">
+                <span className="flex h-9 w-9 items-center justify-center rounded-md bg-brand-soft">
+                  <Icon size={18} className="text-brand" />
+                </span>
+                <h3 className="mt-4 text-[15px] font-semibold">{title}</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-ink-2">{body}</p>
               </div>
             ))}
           </div>
         </section>
 
-        {/* CTA */}
-        <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
-          <div className="grid items-center gap-10 rounded-3xl bg-ink p-8 text-inverse sm:p-12 lg:grid-cols-2">
+        {/* Call to action */}
+        <section className="bg-suite text-suite-ink">
+          <div className="mx-auto grid max-w-6xl items-center gap-8 px-4 py-12 sm:px-6 lg:grid-cols-2">
             <div>
-              <h2 className="font-display text-4xl font-semibold tracking-tight">Built for focus.</h2>
-              <p className="mt-3 max-w-md opacity-70">
-                Suites bolt on dozens of modules. We obsess over the few that actually move revenue.
+              <h2 className="text-2xl font-semibold">Built for focus</h2>
+              <p className="mt-2 max-w-md text-sm opacity-75">
+                Suites bolt on dozens of modules. Lasan Grow concentrates on the few that close deals.
               </p>
-              <Link
-                href={current ? "/dashboard" : "/signup"}
-                className="mt-7 inline-flex h-11 items-center gap-2 rounded-full bg-[var(--inverse)] px-6 text-[15px] font-medium text-[var(--ink)] transition-opacity hover:opacity-90"
-              >
-                {current ? "Open Lasan Grow" : "Create your workspace"} <ArrowRight size={16} />
-              </Link>
+              <LinkButton href={current ? "/dashboard" : "/login"} size="lg" className="mt-6">
+                {current ? "Open Lasan Grow" : "Sign in to your workspace"} <ArrowRight size={16} />
+              </LinkButton>
             </div>
-            <ul className="space-y-3">
-              {COMPARE.map(([label]) => (
-                <li key={label} className="flex items-center gap-3 rounded-xl border border-current/10 px-4 py-3 text-[15px]">
-                  <CheckCircle2 size={18} className="shrink-0 opacity-80" /> {label}
+            <ul className="grid gap-2 sm:grid-cols-2">
+              {ASSURANCES.map((label) => (
+                <li key={label} className="flex items-start gap-2.5 rounded-md border border-suite-line px-3.5 py-3 text-sm">
+                  <CheckCircle2 size={17} className="mt-px shrink-0 text-[#7fbaf5]" /> {label}
                 </li>
               ))}
             </ul>
@@ -163,7 +201,7 @@ export default async function Home() {
         </section>
       </main>
 
-      <PoweredBy className="border-t border-line" />
+      <PoweredBy className="border-t border-line bg-surface" />
     </div>
   );
 }

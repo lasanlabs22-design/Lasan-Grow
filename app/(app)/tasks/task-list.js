@@ -47,7 +47,7 @@ function TaskRow({ task, onToggle }) {
         aria-label={task.done ? `Mark "${task.subject}" as not done` : `Complete "${task.subject}"`}
         className={cx(
           "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-[1.5px] transition-all",
-          task.done ? "border-ink bg-ink text-inverse" : "border-line-strong hover:scale-110 hover:border-ink"
+          task.done ? "border-brand bg-brand text-on-brand" : "border-line-strong hover:scale-110 hover:border-brand"
         )}
       >
         {task.done && <Check size={12} strokeWidth={3} />}
@@ -83,7 +83,7 @@ function Section({ title, count, tone, children, empty }) {
     <Card>
       <div className="flex items-center gap-2 border-b border-line px-5 py-3.5">
         <h2 className={cx("text-sm font-semibold", tone === "bad" && "text-bad")}>{title}</h2>
-        <span className={cx("rounded-full px-2 py-0.5 text-[11px] font-medium", tone === "bad" ? "bg-bad-bg text-bad" : "bg-surface-2 text-ink-3")}>
+        <span className={cx("rounded-sm px-1.5 py-px text-[11px] font-semibold", tone === "bad" ? "bg-bad-bg text-bad" : "bg-surface-2 text-ink-3")}>
           {count}
         </span>
       </div>

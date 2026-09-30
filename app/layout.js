@@ -1,29 +1,20 @@
-import { Geist, Geist_Mono, Bricolage_Grotesque, Instrument_Serif } from "next/font/google";
+import { Space_Grotesk } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
-const bricolage = Bricolage_Grotesque({ variable: "--font-bricolage", subsets: ["latin"] });
-const instrument = Instrument_Serif({
-  variable: "--font-instrument",
-  subsets: ["latin"],
-  weight: "400",
-  style: ["normal", "italic"],
-});
+// Only for the "Powered by Lasan Labs" signature; the app itself uses the system's Segoe UI.
+const spaceGrotesk = Space_Grotesk({ variable: "--font-space-grotesk", subsets: ["latin"], weight: ["600"] });
 
 export const metadata = {
-  title: { default: "Lasan Grow — the sales CRM", template: "%s · Lasan Grow" },
-  description: "A fast, focused CRM for teams that sell. Pipeline, leads, contacts and insight in one calm place.",
+  title: { default: "Lasan Grow — Sales CRM", template: "%s · Lasan Grow" },
+  description: "Sales CRM for pipeline, leads, contacts, companies and follow-ups.",
 };
+
+export const viewport = { themeColor: "#0e2a47" };
 
 export default function RootLayout({ children }) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} ${bricolage.variable} ${instrument.variable} h-full antialiased`}
-    >
+    <html lang="en" suppressHydrationWarning className={`${spaceGrotesk.variable} h-full antialiased`}>
       <body className="min-h-full">
         <ThemeProvider>{children}</ThemeProvider>
       </body>

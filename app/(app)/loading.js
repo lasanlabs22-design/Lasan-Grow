@@ -1,6 +1,6 @@
 // Skeleton shown while a page's server data loads.
 function Block({ className }) {
-  return <div className={`animate-pulse rounded-2xl bg-surface-2 ${className}`} />;
+  return <div className={`animate-pulse rounded-md bg-surface-3/70 ${className}`} />;
 }
 
 export default function Loading() {

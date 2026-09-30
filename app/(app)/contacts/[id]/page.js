@@ -74,7 +74,7 @@ export default async function ContactPage({ params }) {
         <div className="flex items-center gap-4">
           <Avatar name={name} size={60} />
           <div>
-            <h1 className="font-display text-[28px] font-semibold leading-tight tracking-tight">{name}</h1>
+            <h1 className="text-[22px] font-semibold leading-tight">{name}</h1>
             <p className="text-sm text-ink-3">
               {[contact.title, company?.name].filter(Boolean).join(" at ") || "No title yet"}
             </p>

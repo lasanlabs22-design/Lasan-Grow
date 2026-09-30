@@ -69,8 +69,8 @@ function Column({ stage, deals, currency, onAdd }) {
     <section
       ref={setNodeRef}
       className={cx(
-        "flex w-[280px] shrink-0 flex-col rounded-2xl border bg-surface-2/70 transition-colors",
-        isOver ? "border-ink/40 bg-surface-3" : "border-transparent"
+        "flex w-[280px] shrink-0 flex-col rounded-md border bg-surface-3/60 transition-colors",
+        isOver ? "border-brand bg-brand-soft" : "border-line"
       )}
     >
       <header className="px-3.5 pb-2 pt-3.5">
@@ -117,7 +117,7 @@ function OutcomeZone({ stage, tone }) {
     <div
       ref={setNodeRef}
       className={cx(
-        "flex h-16 flex-1 items-center justify-center gap-2 rounded-2xl border-2 border-dashed text-sm font-medium transition-all",
+        "flex h-16 flex-1 items-center justify-center gap-2 rounded-md border-2 border-dashed text-sm font-medium transition-all",
         won ? "border-good/40 text-good" : "border-bad/40 text-bad",
         isOver && (won ? "scale-[1.02] bg-good-bg" : "scale-[1.02] bg-bad-bg")
       )}
@@ -221,7 +221,7 @@ export function DealsBoard({ stages, deals: initialDeals, currency, options }) {
               initial={{ y: 80, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 80, opacity: 0 }}
-              className="fixed inset-x-4 bottom-4 z-40 flex gap-3 rounded-3xl border border-line bg-surface/90 p-3 shadow-pop backdrop-blur lg:left-[272px]"
+              className="fixed inset-x-4 bottom-4 z-40 flex gap-3 rounded-md border border-line bg-surface p-3 shadow-pop lg:left-[256px]"
             >
               <OutcomeZone stage={lostStage} tone="lost" />
               <OutcomeZone stage={wonStage} tone="won" />
@@ -260,7 +260,7 @@ export function DealsBoard({ stages, deals: initialDeals, currency, options }) {
               {["Price too high", "Chose competitor", "No budget", "Timing", "No response"].map((r) => (
                 <label key={r} className="cursor-pointer">
                   <input type="radio" name="reason" value={r} className="peer sr-only" />
-                  <span className="inline-block rounded-full border border-line px-3 py-1.5 text-sm transition-colors peer-checked:border-ink peer-checked:bg-ink peer-checked:text-inverse hover:border-line-strong">
+                  <span className="inline-block rounded-md border border-line-strong px-3 py-1.5 text-sm transition-colors peer-checked:border-brand peer-checked:bg-brand peer-checked:text-on-brand hover:border-line-strong">
                     {r}
                   </span>
                 </label>
@@ -288,7 +288,7 @@ export function DealsBoard({ stages, deals: initialDeals, currency, options }) {
               initial={{ y: 30, opacity: 0, scale: 0.95 }}
               animate={{ y: 0, opacity: 1, scale: 1 }}
               exit={{ y: 30, opacity: 0 }}
-              className="flex items-center gap-2.5 rounded-full bg-ink px-5 py-3 text-sm font-medium text-inverse shadow-pop"
+              className="flex items-center gap-2.5 rounded-md border border-line bg-surface px-4 py-3 text-sm font-semibold text-ink shadow-pop"
             >
               {toast.tone === "won" ? <Trophy size={16} /> : <XCircle size={16} />}
               {toast.text}

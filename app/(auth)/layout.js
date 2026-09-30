@@ -1,74 +1,68 @@
 import Link from "next/link";
+import { BarChart3, Columns3, Gauge, KeyRound, ListTodo, Lock, ShieldCheck } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-provider";
 import { PoweredBy } from "@/components/powered-by";
 
-const BARS = [38, 52, 44, 61, 58, 72, 69, 84, 78, 92];
+// Left: what the product does, in plain enterprise terms (no invented figures). Right: the form.
+const CAPABILITIES = [
+  { icon: Columns3, title: "Pipeline management", text: "Every deal by stage, with weighted value and forecasts." },
+  { icon: Gauge, title: "Lead scoring", text: "A 0–100 score on every lead so the team calls the right people first." },
+  { icon: BarChart3, title: "Sales analytics", text: "Revenue trend, funnel, win rate and sources on one dashboard." },
+  { icon: ListTodo, title: "Activities & follow-ups", text: "Calls, meetings and tasks in an overdue-first inbox." },
+];
+
+const TRUST = [
+  { icon: Lock, label: "Encrypted connections" },
+  { icon: KeyRound, label: "Protected sign-in" },
+  { icon: ShieldCheck, label: "Separate workspaces" },
+];
 
 export default function AuthLayout({ children }) {
   return (
-    <div className="grid min-h-screen lg:grid-cols-[1fr_1.05fr]">
-      <div className="flex flex-col px-4 sm:px-10">
-        <header className="flex h-16 items-center justify-between">
-          <Link href="/" aria-label="Lasan Grow home">
-            <Logo />
-          </Link>
-          <ThemeToggle />
-        </header>
-        <main className="flex flex-1 items-center justify-center py-10">
-          <div className="w-full max-w-[400px]">{children}</div>
-        </main>
-        <PoweredBy />
-      </div>
-
-      {/* Showcase panel */}
-      <aside className="relative m-3 hidden overflow-hidden rounded-3xl border border-line bg-[#0b0b0b] p-12 dark:bg-[#161615] text-white lg:flex lg:flex-col lg:justify-between">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-60"
-          style={{
-            backgroundImage: "radial-gradient(rgba(255,255,255,0.12) 1px, transparent 1px)",
-            backgroundSize: "22px 22px",
-            maskImage: "radial-gradient(ellipse at 70% 30%, black 20%, transparent 75%)",
-          }}
-        />
-        <div className="relative">
-          <p className="text-sm uppercase tracking-[0.2em] text-white/50">The sales CRM</p>
-          <h2 className="mt-4 max-w-md font-display text-5xl font-semibold leading-[1.05] tracking-tight">
-            Less admin.
-            <br />
-            <span className="font-serif text-6xl font-normal italic text-white/80">More closing.</span>
-          </h2>
-        </div>
-
-        <div className="relative rounded-2xl border border-white/10 bg-white/[0.04] p-6 backdrop-blur">
-          <div className="flex items-end justify-between">
-            <div>
-              <p className="text-xs text-white/50">Won this quarter</p>
-              <p className="mt-1 font-display text-3xl font-semibold tabular">₹48.6L</p>
-            </div>
-            <span className="rounded-full bg-[#0ca30c]/20 px-2 py-0.5 text-xs font-medium text-[#3ccf3c]">
-              ▲ 24.8%
-            </span>
-          </div>
-          <div className="mt-6 flex h-28 items-end gap-2" aria-hidden>
-            {BARS.map((h, i) => (
-              <div
-                key={i}
-                className="flex-1 rounded-t-[4px]"
-                style={{ height: `${h}%`, background: i === BARS.length - 1 ? "#3987e5" : "rgba(255,255,255,0.14)" }}
-              />
-            ))}
-          </div>
-          <ul className="mt-5 grid grid-cols-2 gap-x-4 gap-y-2 border-t border-white/10 pt-5 text-sm text-white/70">
-            {["Drag-and-drop pipeline", "Lead scoring", "Revenue forecasts", "Tasks & follow-ups"].map((f) => (
-              <li key={f} className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#3987e5]" />
-                {f}
+    <div className="grid min-h-screen lg:grid-cols-[1fr_minmax(480px,1fr)]">
+      <aside className="hidden flex-col justify-between bg-suite p-12 text-suite-ink lg:flex">
+        <Link href="/" aria-label="Lasan Grow home" className="self-start">
+          <Logo product="Sales" />
+        </Link>
+        <div className="max-w-md">
+          <h2 className="text-3xl font-semibold leading-tight">Sales CRM for your whole team</h2>
+          <p className="mt-3 text-sm opacity-75">Leads, deals, contacts, companies and follow-ups in one workspace.</p>
+          <ul className="mt-8 space-y-5">
+            {CAPABILITIES.map(({ icon: Icon, title, text }) => (
+              <li key={title} className="flex gap-3.5">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-white/10">
+                  <Icon size={17} />
+                </span>
+                <span>
+                  <span className="block text-sm font-semibold">{title}</span>
+                  <span className="block text-sm opacity-70">{text}</span>
+                </span>
               </li>
             ))}
           </ul>
         </div>
+        <ul className="flex flex-wrap gap-x-6 gap-y-2 border-t border-suite-line pt-6 text-xs opacity-75">
+          {TRUST.map(({ icon: Icon, label }) => (
+            <li key={label} className="flex items-center gap-1.5">
+              <Icon size={13} /> {label}
+            </li>
+          ))}
+        </ul>
       </aside>
+
+      <div className="flex flex-col bg-bg px-4 sm:px-10">
+        <header className="flex h-16 items-center justify-between">
+          <Link href="/" aria-label="Lasan Grow home" className="lg:invisible">
+            <Logo />
+          </Link>
+          <ThemeToggle withLabel />
+        </header>
+        <main className="flex flex-1 items-center justify-center py-8">
+          <div className="w-full max-w-[420px] rounded-md border border-line bg-surface p-6 shadow-card sm:p-9">{children}</div>
+        </main>
+        <PoweredBy />
+      </div>
     </div>
   );
 }

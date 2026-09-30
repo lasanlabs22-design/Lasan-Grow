@@ -3,10 +3,13 @@
 import { ThemeProvider as NextThemes, useTheme } from "next-themes";
 import { useSyncExternalStore } from "react";
 import { Moon, Sun } from "lucide-react";
+import { cx } from "@/components/ui";
 
+// White is the default, as in most enterprise software; the black theme is one click away and
+// remembered per browser. "System" can still be picked in Settings.
 export function ThemeProvider({ children }) {
   return (
-    <NextThemes attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+    <NextThemes attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
       {children}
     </NextThemes>
   );
@@ -14,25 +17,29 @@ export function ThemeProvider({ children }) {
 
 const subscribe = () => () => {};
 
-export function ThemeToggle({ className = "" }) {
+// `tone="suite"` is for the dark suite bar at the top of the app.
+export function ThemeToggle({ className, withLabel = false, tone }) {
   const { resolvedTheme, setTheme } = useTheme();
   const mounted = useSyncExternalStore(subscribe, () => true, () => false);
   const dark = mounted && resolvedTheme === "dark";
+  const label = dark ? "Switch to white theme" : "Switch to black theme";
 
   return (
     <button
       type="button"
       onClick={() => setTheme(dark ? "light" : "dark")}
-      aria-label={dark ? "Switch to light theme" : "Switch to dark theme"}
-      className={`relative inline-flex h-8 w-14 shrink-0 items-center rounded-full border border-line bg-surface-2 p-0.5 transition-colors hover:border-line-strong ${className}`}
+      aria-label={label}
+      title={label}
+      className={cx(
+        "inline-flex h-8 shrink-0 items-center gap-2 rounded-md px-2 text-xs font-medium transition-colors",
+        tone === "suite"
+          ? "text-suite-ink/85 hover:bg-white/10 hover:text-suite-ink"
+          : "border border-line bg-surface text-ink-2 hover:bg-surface-2 hover:text-ink",
+        className
+      )}
     >
-      <span
-        className={`flex h-6 w-6 items-center justify-center rounded-full bg-ink text-inverse shadow-card transition-transform duration-300 ${
-          dark ? "translate-x-6" : "translate-x-0"
-        }`}
-      >
-        {dark ? <Moon size={13} /> : <Sun size={13} />}
-      </span>
+      {dark ? <Sun size={15} /> : <Moon size={15} />}
+      {withLabel && <span>{dark ? "White theme" : "Black theme"}</span>}
     </button>
   );
 }
