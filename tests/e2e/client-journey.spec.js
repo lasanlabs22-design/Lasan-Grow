@@ -45,7 +45,8 @@ async function newUser(browser, label = "Test") {
 const dialog = (page) => page.getByRole("dialog").last();
 async function go(page, url) {
   await page.goto(url);
-  await page.waitForLoadState("networkidle");
+  // Let client-side code settle, but don't fail a step because some background request lingers.
+  await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => {});
 }
 async function signIn(page, email, password) {
   // Signing in as someone else: drop the current workspace session (the console one stays).
