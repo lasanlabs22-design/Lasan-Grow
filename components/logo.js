@@ -1,24 +1,20 @@
 import { cx } from "@/components/ui";
 
+// Two upward chevrons on the brand-blue square: up and to the right. The same drawing is the
+// browser-tab icon (app/icon.svg).
+const GLYPH =
+  '<g fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 21.5 L16 14 L23.5 21.5" opacity=".6"/><path d="M8.5 14.5 L16 7 L23.5 14.5"/></g>';
+
 export function LogoMark({ size = 28, className }) {
   return (
-    <span
-      className={cx("inline-flex shrink-0 items-center justify-center rounded-md bg-brand text-on-brand", className)}
-      style={{ width: size, height: size }}
+    <svg
+      className={cx("shrink-0", className)}
+      viewBox="0 0 32 32"
+      width={size}
+      height={size}
       aria-hidden
-    >
-      <svg viewBox="0 0 24 24" width={size * 0.6} height={size * 0.6} fill="none">
-        <path d="M5 19V5" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" />
-        <path d="M5 19h6" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" />
-        <path
-          d="M13 15.5l3-4 2.2 2.2L21 8"
-          stroke="currentColor"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    </span>
+      dangerouslySetInnerHTML={{ __html: `<rect width="32" height="32" rx="6" fill="var(--brand)"/>${GLYPH}` }}
+    />
   );
 }
 
