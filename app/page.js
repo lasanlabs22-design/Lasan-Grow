@@ -104,6 +104,8 @@ function ProductPreview() {
 
 export default async function Home() {
   const current = await getCurrentUser();
+  // On the public website (SITE_HOST) the app lives on its own address; locally it's this one.
+  const app = process.env.APP_HOST ? `https://${process.env.APP_HOST}` : "";
 
   return (
     <div className="min-h-screen bg-surface">
@@ -113,12 +115,12 @@ export default async function Home() {
           <nav className="flex items-center gap-2">
             <ThemeToggle />
             {current ? (
-              <LinkButton href="/dashboard" size="sm">
+              <LinkButton href={`${app}/dashboard`} size="sm">
                 Open Lasan Grow <ArrowRight size={14} />
               </LinkButton>
             ) : (
               <>
-                <LinkButton href="/login" size="sm">
+                <LinkButton href={`${app}/login`} size="sm">
                   Sign in
                 </LinkButton>
               </>
@@ -141,7 +143,7 @@ export default async function Home() {
                 where your next win is coming from.
               </p>
               <div className="mt-7 flex flex-wrap items-center gap-3">
-                <LinkButton href={current ? "/dashboard" : "/login"} size="lg">
+                <LinkButton href={`${app}${current ? "/dashboard" : "/login"}`} size="lg">
                   {current ? "Go to dashboard" : "Sign in to your workspace"} <ArrowRight size={16} />
                 </LinkButton>
               </div>
@@ -181,7 +183,7 @@ export default async function Home() {
               <p className="mt-2 max-w-md text-sm opacity-75">
                 Suites bolt on dozens of modules. Lasan Grow concentrates on the few that close deals.
               </p>
-              <LinkButton href={current ? "/dashboard" : "/login"} size="lg" className="mt-6">
+              <LinkButton href={`${app}${current ? "/dashboard" : "/login"}`} size="lg" className="mt-6">
                 {current ? "Open Lasan Grow" : "Sign in to your workspace"} <ArrowRight size={16} />
               </LinkButton>
             </div>

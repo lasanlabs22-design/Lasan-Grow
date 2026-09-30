@@ -8,7 +8,9 @@
 // development account). Everything it creates is named "E2E <stamp>" / *@example.invalid.
 import { test, expect } from "@playwright/test";
 
-// Where the console lives when it has its own address (ops.lasangrow.com); same site otherwise.
+// The public website and the console when they have their own addresses (lasangrow.com,
+// ops.lasangrow.com); otherwise everything is on the base URL.
+const SITE = process.env.E2E_SITE_URL || "";
 const CONSOLE = process.env.E2E_CONSOLE_URL || "";
 const CONSOLE_EMAIL = process.env.E2E_CONSOLE_EMAIL || "ops@lasan.test";
 const CONSOLE_PASSWORD = process.env.E2E_CONSOLE_PASSWORD || "OpsPass123";
@@ -78,7 +80,7 @@ test.afterAll(async () => {
 
 test("Public: home page offers sign-in and no self sign-up", async () => {
   const p = (shown = s.visitor);
-  await go(p, "/");
+  await go(p, SITE + "/");
   await expect(p.getByRole("link", { name: /Sign in/ }).first()).toBeVisible();
   await expect(p.locator('a[href="/signup"]')).toHaveCount(0);
 });
@@ -475,7 +477,7 @@ test("Phone: the site fits a phone screen", async () => {
   // As a signed-out visitor: signed-in people see "Open Lasan Grow" instead of "Sign in".
   await p.context().clearCookies({ name: "lg_session" });
   await p.setViewportSize({ width: 390, height: 844 });
-  await go(p, "/");
+  await go(p, SITE + "/");
   await expect(p.getByRole("link", { name: /Sign in/ }).first()).toBeVisible();
   const overflow = await p.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
   await p.setViewportSize({ width: 1440, height: 900 });
