@@ -13,7 +13,7 @@ import {
   Users,
   Zap,
 } from "lucide-react";
-import { Logo } from "@/components/logo";
+import { Logo, LogoMark } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-provider";
 import { PoweredBy } from "@/components/powered-by";
 import { LinkButton } from "@/components/ui";
@@ -56,7 +56,7 @@ function ProductPreview() {
   return (
     <div className="overflow-hidden rounded-md border border-line bg-surface shadow-pop" aria-hidden>
       <div className="flex h-9 items-center gap-2 bg-suite px-3 text-suite-ink">
-        <span className="h-4 w-4 rounded-sm bg-brand" />
+        <LogoMark size={16} />
         <span className="text-xs font-semibold">Lasan Grow</span>
         <span className="text-xs opacity-60">| Sales</span>
         <span className="mx-auto hidden h-5 w-40 rounded-sm bg-white/15 sm:block" />
