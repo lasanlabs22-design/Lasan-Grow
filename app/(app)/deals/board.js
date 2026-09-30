@@ -16,13 +16,15 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import { CalendarDays, Plus, Trophy, XCircle, Building2 } from "lucide-react";
 import { Avatar, Button, Field, Input, cx } from "@/components/ui";
-import { Modal } from "@/components/client";
+import { Modal, useHydrated } from "@/components/client";
 import { money, shortDate } from "@/lib/format";
 import { DealForm } from "./deal-form";
 import { moveDeal } from "./actions";
 
 function DealCard({ deal, currency, overlay }) {
-  const overdue = deal.expectedClose && new Date(deal.expectedClose) < new Date(new Date().toDateString());
+  // Overdue depends on the viewer's "today": decided in the browser only.
+  const hydrated = useHydrated();
+  const overdue = hydrated && deal.expectedClose && deal.expectedClose < new Date().toLocaleDateString("en-CA");
   return (
     <div
       className={cx(

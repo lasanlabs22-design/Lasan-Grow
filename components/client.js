@@ -3,6 +3,15 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 const noopSubscribe = () => () => {};
+
+/**
+ * False while the server renders and the browser hydrates, true afterwards. Anything that depends on
+ * the viewer's clock or time zone ("Today, 10:00 AM", "in 3 days", overdue) waits for it, so the
+ * server (UTC on Vercel) and the browser never disagree.
+ */
+export function useHydrated() {
+  return useSyncExternalStore(noopSubscribe, () => true, () => false);
+}
 import { createPortal } from "react-dom";
 import { useFormStatus } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";

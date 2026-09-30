@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { AlertCircle, Check, CheckSquare, Columns3, Plus, User, PartyPopper } from "lucide-react";
 import { Button, Card, Field, Input, Select, Textarea, cx } from "@/components/ui";
-import { Modal, SubmitButton } from "@/components/client";
+import { Modal, SubmitButton, useHydrated } from "@/components/client";
 import { ACTIVITY_META } from "@/components/activity";
 import { createActivity, toggleActivity } from "./actions";
 
@@ -32,7 +32,9 @@ function whenLabel(date) {
 function TaskRow({ task, onToggle }) {
   const meta = ACTIVITY_META[task.type] ?? ACTIVITY_META.task;
   const Icon = meta.icon;
-  const overdue = !task.done && new Date(task.dueAt) < new Date();
+  // "Today, 10:00 AM" and overdue depend on the viewer's clock and time zone: browser only.
+  const hydrated = useHydrated();
+  const overdue = hydrated && !task.done && new Date(task.dueAt) < new Date();
   return (
     <motion.li
       layout
@@ -72,7 +74,7 @@ function TaskRow({ task, onToggle }) {
         </div>
       </div>
       <span className={cx("shrink-0 text-xs tabular", overdue ? "font-medium text-bad" : "text-ink-3")}>
-        {task.done ? "Done" : whenLabel(task.dueAt)}
+        {task.done ? "Done" : hydrated ? whenLabel(task.dueAt) : ""}
       </span>
     </motion.li>
   );
