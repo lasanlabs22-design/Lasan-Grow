@@ -1,8 +1,8 @@
 /**
  * Runs the end-to-end suite against a deployed site (default: the live one) and cleans up after.
  *
- *   npm run test:e2e:live                         https://lasan-grow.vercel.app
- *   npm run test:e2e:live -- https://preview-url  any other deployment on the same database
+ *   npm run test:e2e:live                         app.lasangrow.com + ops.lasangrow.com
+ *   npm run test:e2e:live -- https://preview-url  any other deployment on the same database (one address)
  *   npm run test:e2e:live -- --watch              visible browser windows, slowed down to follow
  *
  * Creates a temporary console account (e2e-bot@example.invalid) in the database from DATABASE_URL,
@@ -18,7 +18,9 @@ nextEnv.loadEnvConfig(process.cwd(), false, { info() {}, error: console.error })
 
 const args = process.argv.slice(2);
 const watch = args.includes("--watch");
-const base = args.find((a) => !a.startsWith("--")) || "https://lasan-grow.vercel.app";
+const custom = args.find((a) => !a.startsWith("--"));
+const base = custom || "https://app.lasangrow.com";
+const consoleBase = custom || "https://ops.lasangrow.com";
 const url = process.env.DATABASE_URL;
 if (!url) {
   console.error("DATABASE_URL is not set: it must point at the database the site under test uses.");
@@ -43,9 +45,10 @@ try {
   if (run("node", ["scripts/platform-admin.mjs", "--email", BOT, "--name", "E2E Bot", "--password", password]) !== 0) {
     throw new Error("Couldn't create the temporary console account");
   }
-  console.log(`\nRunning the suite against ${base}\n`);
+  console.log(`\nRunning the suite against ${base} (console: ${consoleBase})\n`);
   status = run("npx", ["playwright", "test"], {
     E2E_BASE_URL: base,
+    E2E_CONSOLE_URL: consoleBase,
     E2E_CONSOLE_EMAIL: BOT,
     E2E_CONSOLE_PASSWORD: password,
     ...(watch ? { E2E_HEADED: "1" } : {}),
