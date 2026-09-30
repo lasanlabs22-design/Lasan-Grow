@@ -19,6 +19,7 @@ This guide explains how to use Lasan Grow day to day: capturing leads, running y
 11. [Roles and permissions](#11-roles-and-permissions)
 12. [Everyday workflow](#12-everyday-workflow)
 13. [FAQ and troubleshooting](#13-faq-and-troubleshooting)
+14. [Platform console (Lasan staff only)](#14-platform-console-lasan-staff-only)
 
 ---
 
@@ -41,14 +42,11 @@ The usual journey is: **Lead → (convert) → Contact + Company + Deal → Won 
 
 ## 2. Getting started
 
-### Create your workspace
+### Getting your workspace
 
-1. Open the app and click **Get started** (or go to `/signup`).
-2. Fill in your name, a workspace name (usually your company name), work email, a password of 8+ characters, and your **currency**.
-3. Choose whether to **fill the workspace with sample data**:
-   - **Ticked:** you get realistic demo companies, contacts, leads, deals and tasks, so you can explore the charts and pipeline immediately.
-   - **Unticked:** you start with a clean, empty workspace.
-4. Click **Create workspace**. You become the workspace **Owner**.
+There is no public sign-up. The Lasan team creates your company's workspace in the platform console and sends the **owner** a sign-in page address, an email and a **temporary password**. Workspaces can be created empty or with **sample data** for demos and trials.
+
+The first time you sign in with a temporary password, Lasan Grow asks you to **choose your own password** (8+ characters with a letter and a number) before you can continue. Teammates your admins add in **Settings → Team** get the same first-sign-in step.
 
 > **Tip:** Sample data is stored as ordinary records. When you're ready to go live, clear it from **Settings → Danger zone** *before* entering real data. Clearing removes all records, not just the samples.
 
@@ -269,7 +267,7 @@ In the timeline, **tick the checkbox** to complete an item (tick again to reopen
 | **Appearance** | White, Black or Match my device theme | Everyone |
 | **Workspace** | Rename the workspace; change currency | Owner, Admin |
 | **Pipeline stages** | Rename stages, set win %, reorder (↑ ↓), add or delete stages | Owner, Admin |
-| **Team** | See members; add a teammate; remove a member | Owner, Admin (to manage) |
+| **Team** | See members; add a teammate with a temporary password (they replace it at first sign-in); remove a member | Owner, Admin (to manage) |
 | **Danger zone** | Clear all records | Owner only |
 
 ### Pipeline stage rules
@@ -340,10 +338,27 @@ Everyone in a workspace can see and edit all of its CRM records. The owner can't
 ## 13. FAQ and troubleshooting
 
 **Is there a default login?**
-No. Each workspace is created through **Sign up**, and the person who signs up becomes its Owner.
+No. Each workspace is created by the Lasan team, who send its owner a temporary password.
 
 **I forgot my password.**
-There's no self-service reset yet. If you're a member or admin, ask an owner or admin to remove you and add you again with a new temporary password. Your workspace's records aren't affected.
+There's no self-service reset yet. **Owners:** contact Lasan support, who can issue a new temporary password from the platform console. **Members and admins:** ask an owner or admin to remove you and add you again with a new temporary password. Your workspace's records aren't affected.
+
+**It says my workspace is suspended.**
+Your company's access has been paused by Lasan. Your data is kept; contact your administrator or Lasan support.
+
+## 14. Platform console (Lasan staff only)
+
+Lasan staff manage customer workspaces at `/platform` (on its own address, such as `ops.<your domain>`, once custom domains are set up). It has its own accounts, separate from any workspace.
+
+| Task | How | Who |
+| --- | --- | --- |
+| Create a workspace | **New workspace**: company, currency, owner's name and email, optional temporary password (blank = generated) and sample data. Copy the sign-in details shown and send them to the owner privately; the password is shown only once. | Admin, Staff |
+| Suspend / reactivate | Row buttons on **Workspaces**. Suspending signs everyone in that workspace out at once and keeps the data. | Admin |
+| Owner forgot password | **Reset owner password** gives a new temporary password to send them. | Admin |
+| Manage the Lasan team | **Lasan team**: add people as Admin or Staff, reset passwords, change roles, deactivate. The console always keeps one active admin. | Admin |
+| Change your password | Your name (top right) → **Change password**. | Everyone |
+
+Five wrong passwords lock a console account for 15 minutes. The very first admin is created from a terminal with `npm run platform:admin` (see the README).
 
 **Can people in other workspaces see our data?**
 No. Every workspace is isolated. You only ever see your own workspace's records.
