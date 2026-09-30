@@ -207,12 +207,6 @@ body {
   background-image: linear-gradient(100deg, #fff 10%, #b3a1ff 55%, #22d3ee);
 }
 
-/* Dotted backdrop used on auth/landing/welcome */
-.dot-grid {
-  background-image: radial-gradient(var(--line-strong) 1px, transparent 1px);
-  background-size: 22px 22px;
-}
-
 /* Heatmap cells carry both theme steps; pick per theme. */
 [data-heat] {
   background: var(--heat-l);

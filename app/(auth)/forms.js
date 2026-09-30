@@ -10,7 +10,7 @@ import { login, signup } from "./actions";
 function FormError({ message }) {
   if (!message) return null;
   return (
-    <div role="alert" className="flex items-center gap-2 rounded-lg bg-bad-bg px-3 py-2.5 text-sm text-bad">
+    <div role="alert" className="flex items-center gap-2 rounded-md border border-bad/30 bg-bad-bg px-3 py-2.5 text-sm text-bad">
       <AlertCircle size={15} /> {message}
     </div>
   );
@@ -32,7 +32,7 @@ export function LoginForm() {
       </SubmitButton>
       <p className="text-center text-sm text-ink-3">
         New to Lasan Grow?{" "}
-        <Link href="/signup" className="font-medium text-ink underline-offset-4 hover:underline">
+        <Link href="/signup" className="font-semibold text-brand-ink underline-offset-4 hover:underline">
           Create a workspace
         </Link>
       </p>
@@ -69,8 +69,8 @@ export function SignupForm() {
           </Select>
         </Field>
       </div>
-      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-surface-2 p-3.5">
-        <input type="checkbox" name="demo" defaultChecked className="mt-0.5 h-4 w-4 accent-[var(--ink)]" />
+      <label className="flex cursor-pointer items-start gap-3 rounded-md border border-line bg-surface-2 p-3.5">
+        <input type="checkbox" name="demo" defaultChecked className="mt-0.5 h-4 w-4 accent-[var(--brand)]" />
         <span>
           <span className="block text-sm font-medium">Fill my workspace with sample data</span>
           <span className="block text-xs text-ink-3">See charts and the pipeline come alive. You can clear it later.</span>
@@ -81,7 +81,7 @@ export function SignupForm() {
       </SubmitButton>
       <p className="text-center text-sm text-ink-3">
         Already have an account?{" "}
-        <Link href="/login" className="font-medium text-ink underline-offset-4 hover:underline">
+        <Link href="/login" className="font-semibold text-brand-ink underline-offset-4 hover:underline">
           Sign in
         </Link>
       </p>

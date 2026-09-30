@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "motion/react";
-import { ArrowRight, CalendarClock, CircleDollarSign, Flame } from "lucide-react";
-import { LogoMark } from "@/components/logo";
+import { motion } from "motion/react";
+import { ArrowRight, CalendarClock, CircleDollarSign, Flag } from "lucide-react";
+import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-provider";
 import { PoweredBy } from "@/components/powered-by";
 import { CountUp } from "@/components/client";
@@ -12,75 +12,24 @@ import { CountUp } from "@/components/client";
 const subscribe = () => () => {};
 
 function greetingFor(hour) {
-  if (hour < 5) return { hello: "Burning the midnight oil", emoji: "🌙" };
-  if (hour < 12) return { hello: "Good morning", emoji: "☀️" };
-  if (hour < 17) return { hello: "Good afternoon", emoji: "🌤️" };
-  if (hour < 21) return { hello: "Good evening", emoji: "🌆" };
-  return { hello: "Working late", emoji: "🌙" };
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
 }
 
-const TAGLINES = [
-  "Let's close something big today.",
-  "Your pipeline missed you.",
-  "Every follow-up is a future win.",
-  "Today's calls are tomorrow's revenue.",
-  "Momentum loves consistency.",
-];
-
-const CONFETTI_COLORS = ["var(--s1)", "var(--s2)", "var(--s3)", "var(--s4)", "var(--s5)", "var(--s7)"];
-
-// Deterministic 0–1 noise so renders stay pure (and identical on every render).
-const noise = (i, k) => {
-  const v = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453;
-  return v - Math.floor(v);
-};
-
-function Confetti() {
-  const pieces = useMemo(
-    () =>
-      Array.from({ length: 70 }, (_, i) => ({
-        id: i,
-        x: (noise(i, 1) - 0.5) * 900,
-        y: -noise(i, 2) * 520 - 120,
-        r: noise(i, 3) * 720 - 360,
-        w: 6 + noise(i, 4) * 6,
-        h: 8 + noise(i, 5) * 10,
-        delay: noise(i, 6) * 0.25,
-        color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-      })),
-    []
-  );
-  return (
-    <div className="pointer-events-none fixed inset-x-0 top-1/2 z-0 flex justify-center" aria-hidden>
-      {pieces.map((p) => (
-        <motion.span
-          key={p.id}
-          className="absolute rounded-[2px]"
-          style={{ width: p.w, height: p.h, background: p.color }}
-          initial={{ x: 0, y: 0, opacity: 1, rotate: 0 }}
-          animate={{ x: p.x, y: [0, p.y, p.y + 700], opacity: [1, 1, 0], rotate: p.r }}
-          transition={{ duration: 2.6, delay: 0.9 + p.delay, ease: [0.2, 0.7, 0.4, 1], times: [0, 0.35, 1] }}
-        />
-      ))}
-    </div>
-  );
-}
+const rise = (delay) => ({
+  initial: { opacity: 0, y: 10 },
+  animate: { opacity: 1, y: 0 },
+  transition: { delay, duration: 0.45, ease: [0.2, 0.8, 0.2, 1] },
+});
 
 function Stat({ icon: Icon, label, children, delay }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 18, filter: "blur(6px)" }}
-      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-      transition={{ delay, duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }}
-      className="flex items-center gap-3 rounded-2xl border border-line bg-surface/80 px-4 py-3.5 shadow-card backdrop-blur"
-    >
-      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface-2">
-        <Icon size={17} className="text-ink-2" />
-      </span>
-      <div className="text-left">
-        <p className="font-display text-lg font-semibold leading-tight tabular">{children}</p>
-        <p className="text-xs text-ink-3">{label}</p>
+    <motion.div {...rise(delay)} className="rounded-md border border-line border-t-[3px] border-t-brand bg-surface p-4 text-left shadow-card">
+      <div className="flex items-center gap-2 text-[13px] font-semibold text-ink-2">
+        <Icon size={15} className="text-brand" /> {label}
       </div>
+      <p className="mt-1.5 text-2xl font-semibold tabular">{children}</p>
     </motion.div>
   );
 }
@@ -88,9 +37,7 @@ function Stat({ icon: Icon, label, children, delay }) {
 export function WelcomeScreen({ firstName, orgName, currency, isNew, stats }) {
   const router = useRouter();
   const mounted = useSyncExternalStore(subscribe, () => true, () => false);
-  const hour = mounted ? new Date().getHours() : 9;
-  const { hello, emoji } = greetingFor(hour);
-  const [taglineIndex, setTaglineIndex] = useState(0);
+  const hello = greetingFor(mounted ? new Date().getHours() : 9);
 
   const enter = () => router.push("/dashboard");
 
@@ -98,128 +45,53 @@ export function WelcomeScreen({ firstName, orgName, currency, isNew, stats }) {
     router.prefetch("/dashboard");
     const onKey = (e) => e.key === "Enter" && enter();
     window.addEventListener("keydown", onKey);
-    const t = setInterval(() => setTaglineIndex((i) => (i + 1) % TAGLINES.length), 3200);
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      clearInterval(t);
-    };
+    return () => window.removeEventListener("keydown", onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const headline = isNew ? "Welcome aboard," : `${hello},`;
-  const nameLetters = [...firstName];
-
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden">
-      {/* Backdrop */}
-      <div className="dot-grid pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,black_10%,transparent_70%)]" />
-      <motion.div
-        aria-hidden
-        className="pointer-events-none absolute left-1/2 top-1/2 h-[560px] w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full"
-        style={{ background: "radial-gradient(circle, color-mix(in srgb, var(--s1) 22%, transparent), transparent 65%)" }}
-        animate={{ scale: [1, 1.12, 1], opacity: [0.7, 1, 0.7] }}
-        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-      />
-      {isNew && mounted && <Confetti />}
-
-      <header className="relative z-10 flex h-16 items-center justify-between px-4 sm:px-8">
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2.5">
-          <LogoMark />
-          <span className="text-sm text-ink-3">{orgName}</span>
-        </motion.div>
-        <ThemeToggle />
+    <div className="flex min-h-screen flex-col bg-bg">
+      <header className="flex h-12 items-center justify-between bg-suite px-4 text-suite-ink sm:px-6">
+        <Logo size={26} product="Sales" />
+        <ThemeToggle tone="suite" />
       </header>
 
-      <main className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 text-center">
-        <motion.div
-          initial={{ scale: 0, rotate: -30 }}
-          animate={{ scale: 1, rotate: [0, 14, -8, 14, 0] }}
-          transition={{ scale: { type: "spring", stiffness: 260, damping: 14 }, rotate: { delay: 0.5, duration: 1.2 } }}
-          className="mb-6 text-5xl"
-          aria-hidden
-        >
-          {isNew ? "🎉" : emoji}
-        </motion.div>
+      <main className="flex flex-1 flex-col items-center justify-center px-4 py-12 text-center">
+        <motion.p {...rise(0)} className="text-sm font-semibold text-brand-ink">
+          {orgName}
+        </motion.p>
+        <motion.h1 {...rise(0.1)} className="mt-2 text-[clamp(1.9rem,4.5vw,2.75rem)] font-semibold leading-tight">
+          {isNew ? `Welcome to Lasan Grow, ${firstName}` : `${hello}, ${firstName}`}
+        </motion.h1>
+        <motion.p {...rise(0.2)} className="mt-2 text-base text-ink-2">
+          {isNew ? "Your workspace is ready. Here's where things stand." : "Here's where things stand today."}
+        </motion.p>
 
-        <h1 className="font-display text-[clamp(2.2rem,6vw,4.5rem)] font-semibold leading-[1] tracking-tight">
-          <motion.span
-            className="block"
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: [0.2, 0.8, 0.2, 1] }}
-          >
-            {headline}
-          </motion.span>
-          <span className="mt-2 block font-serif text-[clamp(3.4rem,11vw,8.5rem)] font-normal italic leading-[1.02]" aria-label={firstName}>
-            {nameLetters.map((ch, i) => (
-              <motion.span
-                key={i}
-                aria-hidden
-                className="inline-block"
-                initial={{ opacity: 0, y: 60, rotate: 8, filter: "blur(12px)" }}
-                animate={{ opacity: 1, y: 0, rotate: 0, filter: "blur(0px)" }}
-                transition={{ delay: 0.35 + i * 0.07, type: "spring", stiffness: 200, damping: 18 }}
-              >
-                {ch === " " ? " " : ch}
-              </motion.span>
-            ))}
-            <motion.span
-              aria-hidden
-              className="inline-block text-s1"
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.4 + nameLetters.length * 0.07, type: "spring" }}
-            >
-              .
-            </motion.span>
-          </span>
-        </h1>
-
-        <div className="mt-6 h-7 overflow-hidden text-lg text-ink-2">
-          <AnimatePresence mode="wait">
-            <motion.p
-              key={isNew ? "new" : taglineIndex}
-              initial={{ y: 24, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -24, opacity: 0 }}
-              transition={{ duration: 0.4 }}
-            >
-              {isNew ? `${orgName} is ready. Let's build your pipeline.` : TAGLINES[taglineIndex]}
-            </motion.p>
-          </AnimatePresence>
-        </div>
-
-        <div className="mt-10 grid w-full max-w-2xl gap-3 sm:grid-cols-3">
-          <Stat icon={CircleDollarSign} label={`in ${stats.openDeals} open deals`} delay={1.1}>
-            <CountUp value={stats.pipelineValue} currency={currency} compact duration={1400} />
+        <div className="mt-9 grid w-full max-w-2xl gap-3 sm:grid-cols-3">
+          <Stat icon={CircleDollarSign} label={`Open pipeline · ${stats.openDeals} deals`} delay={0.35}>
+            <CountUp value={stats.pipelineValue} currency={currency} compact duration={1200} />
           </Stat>
-          <Stat icon={CalendarClock} label="tasks due today" delay={1.25}>
-            <CountUp value={stats.tasksDue} duration={1000} />
+          <Stat icon={CalendarClock} label="Tasks due today" delay={0.45}>
+            <CountUp value={stats.tasksDue} duration={900} />
           </Stat>
-          <Stat icon={Flame} label="deals closing this week" delay={1.4}>
-            <CountUp value={stats.closingThisWeek} duration={1000} />
+          <Stat icon={Flag} label="Closing this week" delay={0.55}>
+            <CountUp value={stats.closingThisWeek} duration={900} />
           </Stat>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.7 }}
-          className="mt-10 flex flex-col items-center gap-3"
-        >
+        <motion.div {...rise(0.7)} className="mt-9 flex flex-col items-center gap-2.5">
           <button
             onClick={enter}
-            className="group inline-flex h-12 items-center gap-2 rounded-full bg-ink pl-6 pr-5 text-[15px] font-medium text-inverse shadow-pop transition-transform hover:scale-[1.03] active:scale-[0.98]"
+            className="inline-flex h-10 items-center gap-2 rounded-md bg-brand px-5 text-sm font-semibold text-on-brand transition-colors hover:bg-brand-hover"
           >
-            Enter your workspace
-            <ArrowRight size={17} className="transition-transform group-hover:translate-x-1" />
+            Go to dashboard <ArrowRight size={16} />
           </button>
           <p className="text-xs text-ink-3">
-            or press <kbd className="rounded border border-line bg-surface-2 px-1.5 py-0.5 font-mono text-[11px]">Enter</kbd>
+            or press <kbd className="rounded-sm border border-line bg-surface px-1.5 py-0.5 font-mono text-[11px]">Enter</kbd>
           </p>
         </motion.div>
       </main>
-      <PoweredBy className="relative z-10" />
+      <PoweredBy />
     </div>
   );
 }
