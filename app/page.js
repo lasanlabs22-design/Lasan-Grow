@@ -118,11 +118,8 @@ export default async function Home() {
               </LinkButton>
             ) : (
               <>
-                <LinkButton href="/login" variant="secondary" size="sm">
+                <LinkButton href="/login" size="sm">
                   Sign in
-                </LinkButton>
-                <LinkButton href="/signup" size="sm" className="hidden sm:inline-flex">
-                  Get started
                 </LinkButton>
               </>
             )}
@@ -145,14 +142,12 @@ export default async function Home() {
               </p>
               <div className="mt-7 flex flex-wrap items-center gap-3">
                 <LinkButton href={current ? "/dashboard" : "/login"} size="lg">
-                  {current ? "Go to dashboard" : "Sign in"} <ArrowRight size={16} />
+                  {current ? "Go to dashboard" : "Sign in to your workspace"} <ArrowRight size={16} />
                 </LinkButton>
-                {!current && (
-                  <LinkButton href="/signup" size="lg" variant="secondary">
-                    Get started
-                  </LinkButton>
-                )}
               </div>
+              {!current && (
+                <p className="mt-3 text-sm text-ink-3">Workspaces are set up for each company by the Lasan team.</p>
+              )}
               <p className="mt-5 flex items-center gap-2 text-xs text-ink-3">
                 <ShieldCheck size={14} className="text-good" /> Encrypted connections · Workspace-level data separation
               </p>

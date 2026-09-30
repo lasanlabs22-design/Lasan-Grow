@@ -5,57 +5,11 @@ import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { getDb, schema } from "@/lib/db";
-import { startSession, endSession } from "@/lib/auth";
-import { createDefaultStages, seedDemoData } from "@/lib/seed";
+import { startSession, endSession, requireUser } from "@/lib/auth";
+import { passwordProblem } from "@/lib/passwords";
 
-const signupSchema = z.object({
-  name: z.string().trim().min(2, "Tell us your name"),
-  company: z.string().trim().min(2, "Name your workspace"),
-  email: z.email("Enter a valid email").transform((e) => e.toLowerCase()),
-  password: z.string().min(8, "Use at least 8 characters"),
-  currency: z.enum(["INR", "USD", "EUR", "GBP", "AED"]).default("INR"),
-  demo: z.boolean(),
-});
-
-export async function signup(_prev, formData) {
-  const parsed = signupSchema.safeParse({
-    name: formData.get("name"),
-    company: formData.get("company"),
-    email: formData.get("email"),
-    password: formData.get("password"),
-    currency: formData.get("currency") || "INR",
-    demo: formData.get("demo") === "on",
-  });
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0].message, values: Object.fromEntries(formData) };
-  }
-  const { name, company, email, password, currency, demo } = parsed.data;
-
-  const db = await getDb();
-  const [existing] = await db
-    .select({ id: schema.users.id })
-    .from(schema.users)
-    .where(eq(schema.users.email, email))
-    .limit(1);
-  if (existing) {
-    return { error: "An account with this email already exists", values: Object.fromEntries(formData) };
-  }
-
-  const passwordHash = await bcrypt.hash(password, 10);
-  const user = await db.transaction(async (tx) => {
-    const [org] = await tx.insert(schema.organizations).values({ name: company, currency }).returning();
-    const [u] = await tx
-      .insert(schema.users)
-      .values({ orgId: org.id, name, email, passwordHash, role: "owner" })
-      .returning();
-    const stageRows = await createDefaultStages(tx, org.id);
-    if (demo) await seedDemoData(tx, org.id, u.id, stageRows);
-    return u;
-  });
-
-  await startSession(user);
-  redirect("/welcome?new=1");
-}
+// There is no public sign-up: workspaces are created by Lasan in the platform console (/platform),
+// and each workspace's admins add their own team in Settings.
 
 const loginSchema = z.object({
   email: z.string().trim().toLowerCase(),
@@ -71,15 +25,44 @@ export async function login(_prev, formData) {
   if (!parsed.success) return fail;
 
   const db = await getDb();
-  const [user] = await db
-    .select()
+  const [row] = await db
+    .select({ user: schema.users, status: schema.organizations.status })
     .from(schema.users)
+    .innerJoin(schema.organizations, eq(schema.users.orgId, schema.organizations.id))
     .where(eq(schema.users.email, parsed.data.email))
     .limit(1);
-  if (!user || !(await bcrypt.compare(parsed.data.password, user.passwordHash))) return fail;
+  if (!row || !(await bcrypt.compare(parsed.data.password, row.user.passwordHash))) return fail;
+  // Only said after a correct password, so it can't be used to find out which emails exist.
+  if (row.status !== "active") {
+    return {
+      error: "This workspace is suspended. Please contact your administrator or Lasan support.",
+      values: { email: formData.get("email") },
+    };
+  }
 
-  await startSession(user);
-  redirect("/welcome");
+  await db.update(schema.users).set({ lastLoginAt: new Date() }).where(eq(schema.users.id, row.user.id));
+  await startSession(row.user);
+  redirect(row.user.mustChangePassword ? "/change-password" : "/welcome");
+}
+
+// First sign-in with a password someone else chose (the console, or a workspace admin).
+export async function setOwnPassword(_prev, formData) {
+  const { user } = await requireUser({ allowPasswordChange: true });
+  const current = String(formData.get("current") ?? "");
+  const next = String(formData.get("next") ?? "");
+  if (next !== String(formData.get("confirm") ?? "")) return { error: "The new passwords don't match" };
+  const problem = passwordProblem(next);
+  if (problem) return { error: problem };
+  if (next === current) return { error: "Choose a password different from the temporary one" };
+
+  const db = await getDb();
+  const [row] = await db.select({ hash: schema.users.passwordHash }).from(schema.users).where(eq(schema.users.id, user.id));
+  if (!(await bcrypt.compare(current, row.hash))) return { error: "The temporary password is wrong" };
+  await db
+    .update(schema.users)
+    .set({ passwordHash: await bcrypt.hash(next, 10), mustChangePassword: false })
+    .where(eq(schema.users.id, user.id));
+  redirect("/welcome?new=1");
 }
 
 export async function logout() {
