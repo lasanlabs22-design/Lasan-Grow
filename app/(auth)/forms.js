@@ -6,6 +6,9 @@ import { Field, Input } from "@/components/ui";
 import { SubmitButton } from "@/components/client";
 import { login, setOwnPassword } from "./actions";
 
+// The Terms and Privacy Policy live on the public website.
+const LEGAL_SITE = "https://lasangrow.com";
+
 function FormError({ message }) {
   if (!message) return null;
   return (
@@ -29,6 +32,17 @@ export function LoginForm() {
       <SubmitButton size="lg" className="w-full" pendingText="Signing in…">
         Sign in
       </SubmitButton>
+      <p className="text-center text-xs leading-relaxed text-ink-3">
+        By signing in, you agree to the{" "}
+        <a href={`${LEGAL_SITE}/terms`} className="font-semibold text-brand-ink underline-offset-2 hover:underline">
+          Terms of Service
+        </a>{" "}
+        and{" "}
+        <a href={`${LEGAL_SITE}/privacy`} className="font-semibold text-brand-ink underline-offset-2 hover:underline">
+          Privacy Policy
+        </a>
+        .
+      </p>
       <p className="border-t border-line pt-4 text-center text-xs leading-relaxed text-ink-3">
         Accounts are set up by your workspace administrator. Forgot your password or need access? Ask your
         administrator.
