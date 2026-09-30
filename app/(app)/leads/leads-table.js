@@ -200,7 +200,7 @@ export function LeadsTable({ leads, currency, openId }) {
                         });
                       }}
                       className={cx(
-                        "cursor-pointer rounded-full border px-2.5 py-1 text-xs font-medium capitalize outline-none transition-colors",
+                        "cursor-pointer rounded-sm border px-2 py-0.5 text-xs font-semibold capitalize outline-none transition-colors",
                         l.status === "qualified" && "border-transparent bg-good-bg text-good",
                         l.status === "unqualified" && "border-transparent bg-bad-bg text-bad",
                         l.status === "contacted" && "border-line bg-surface-2 text-ink-2",

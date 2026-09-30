@@ -38,7 +38,7 @@ export function StageStepper({ deal, stages }) {
             title={`Move to ${s.name}`}
             className={cx(
               "flex min-w-[120px] flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-[13px] transition-colors",
-              current ? "bg-ink font-medium text-inverse" : reached ? "bg-surface-2 text-ink" : "text-ink-3 hover:bg-surface-2 hover:text-ink"
+              current ? "bg-brand font-semibold text-on-brand" : reached ? "bg-surface-2 text-ink" : "text-ink-3 hover:bg-surface-2 hover:text-ink"
             )}
           >
             {reached && !current && <Check size={13} />}

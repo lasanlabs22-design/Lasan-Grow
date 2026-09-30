@@ -6,10 +6,10 @@ import { Moon, Sun } from "lucide-react";
 import { cx } from "@/components/ui";
 
 // White is the default, as in most enterprise software; the black theme is one click away and
-// remembered per browser.
+// remembered per browser. "System" can still be picked in Settings.
 export function ThemeProvider({ children }) {
   return (
-    <NextThemes attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
+    <NextThemes attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
       {children}
     </NextThemes>
   );

@@ -13,7 +13,7 @@ import {
 import { requireUser } from "@/lib/auth";
 import { getDashboard } from "@/lib/queries/dashboard";
 import { money, number, percent, shortDate, relativeTime } from "@/lib/format";
-import { Badge, Card, CardHeader, LinkButton, EmptyState, cx } from "@/components/ui";
+import { Badge, Card, CardHeader, LinkButton, EmptyState, PageHeader, cx } from "@/components/ui";
 import { CountUp } from "@/components/client";
 import { RevenueChart, StageFunnel, SourceDonut, BarList, Heatmap, Sparkline } from "@/components/charts";
 
@@ -32,12 +32,12 @@ function Delta({ value }) {
 
 function Kpi({ label, children, footer, spark }) {
   return (
-    <Card className="p-5">
+    <Card className="border-t-[3px] border-t-brand p-4">
       <div className="flex items-start justify-between gap-2">
-        <p className="text-[13px] text-ink-3">{label}</p>
+        <p className="text-[13px] font-semibold text-ink-2">{label}</p>
         {spark}
       </div>
-      <p className="mt-1 font-display text-[28px] font-semibold leading-tight tracking-tight tabular">{children}</p>
+      <p className="mt-1 text-[26px] font-semibold leading-tight tabular">{children}</p>
       <div className="mt-2">{footer}</div>
     </Card>
   );
@@ -54,22 +54,17 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-sm text-ink-3">{new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}</p>
-          <h1 className="mt-1 font-display text-[30px] font-semibold leading-tight tracking-tight">
-            Hey {user.name.split(" ")[0]}, <span className="font-serif font-normal italic text-ink-2">here&apos;s your pulse.</span>
-          </h1>
-        </div>
-        <div className="flex gap-2">
-          <LinkButton href="/leads?new=1" variant="secondary">
-            <Plus size={15} /> Lead
-          </LinkButton>
-          <LinkButton href="/deals?new=1">
-            <Plus size={15} /> New deal
-          </LinkButton>
-        </div>
-      </div>
+      <PageHeader
+        title="Sales dashboard"
+        description={`${user.name} · ${new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}`}
+      >
+        <LinkButton href="/leads?new=1" variant="secondary">
+          <Plus size={15} /> New lead
+        </LinkButton>
+        <LinkButton href="/deals?new=1">
+          <Plus size={15} /> New deal
+        </LinkButton>
+      </PageHeader>
 
       {!hasData ? (
         <Card>

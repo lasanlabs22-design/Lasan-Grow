@@ -113,7 +113,7 @@ export default async function DealsPage({ searchParams }) {
                   href={`/deals?view=list&status=${s}${q ? `&q=${encodeURIComponent(q)}` : ""}`}
                   className={cx(
                     "rounded-lg px-3 py-1.5 text-[13px] transition-colors",
-                    status === s ? "bg-ink text-inverse" : "text-ink-2 hover:bg-surface-2"
+                    status === s ? "bg-brand-soft font-semibold text-brand-ink" : "text-ink-2 hover:bg-surface-2"
                   )}
                 >
                   {label}

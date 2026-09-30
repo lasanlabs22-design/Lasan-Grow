@@ -73,8 +73,8 @@ export default async function DealPage({ params }) {
             </Badge>
             {company && <span className="text-sm text-ink-3">{company.name}</span>}
           </div>
-          <h1 className="mt-2 font-display text-[30px] font-semibold leading-tight tracking-tight">{deal.title}</h1>
-          <p className="mt-2 font-display text-3xl font-semibold tabular">
+          <h1 className="mt-2 text-[22px] font-semibold leading-tight">{deal.title}</h1>
+          <p className="mt-2 text-2xl font-semibold tabular">
             {money(deal.value, cur)}
             <span className="ml-3 text-sm font-normal text-ink-3">
               {deal.status === "open" ? `${money(weighted, cur, { compact: true })} weighted at ${stage.probability}%` : deal.status === "won" ? `closed ${longDate(deal.closedAt)}` : `lost ${longDate(deal.closedAt)} · ${deal.lostReason ?? "no reason"}`}

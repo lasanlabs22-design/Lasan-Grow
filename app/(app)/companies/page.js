@@ -77,7 +77,7 @@ export default async function CompaniesPage({ searchParams }) {
             <Link
               key={s}
               href={qs({ sort: s })}
-              className={cx("rounded-lg px-3 py-1.5 transition-colors", sort === s ? "bg-ink text-inverse" : "text-ink-2 hover:bg-surface-2")}
+              className={cx("rounded-lg px-3 py-1.5 transition-colors", sort === s ? "bg-brand-soft font-semibold text-brand-ink" : "text-ink-2 hover:bg-surface-2")}
             >
               {label}
             </Link>
@@ -97,7 +97,7 @@ export default async function CompaniesPage({ searchParams }) {
               key={c.id}
               href={`/companies/${c.id}`}
               data-card
-              className="group rounded-2xl border border-line bg-surface p-5 shadow-card transition-all hover:-translate-y-0.5 hover:border-line-strong hover:shadow-pop"
+              className="group rounded-md border border-line bg-surface p-4 shadow-card transition-colors hover:border-brand"
             >
               <div className="flex items-start gap-3">
                 <Monogram name={c.name} />
