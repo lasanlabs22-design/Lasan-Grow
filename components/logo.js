@@ -28,10 +28,11 @@ export function Logo({ className, size, product }) {
     <span className={cx("inline-flex items-center gap-2.5", className)}>
       <LogoMark size={size} />
       <span className="text-[16px] font-semibold">Lasan Grow</span>
+      {/* Phones have room for the brand only. */}
       {product && (
         <>
-          <span className="h-4 w-px bg-current opacity-30" aria-hidden />
-          <span className="text-[15px] font-normal opacity-85">{product}</span>
+          <span className="hidden h-4 w-px bg-current opacity-30 sm:block" aria-hidden />
+          <span className="hidden text-[15px] font-normal opacity-85 sm:inline">{product}</span>
         </>
       )}
     </span>
