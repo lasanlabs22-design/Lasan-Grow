@@ -411,6 +411,7 @@ test("Teammate: members can't manage the team", async () => {
 });
 
 test("Security: 5 wrong passwords lock the account", async () => {
+  test.setTimeout(180_000); // six sign-ins against the live site
   const p = (shown = s.mate);
   for (let i = 0; i < 5; i++) {
     await signIn(p, MATE, `Wrong${i}pass`);
