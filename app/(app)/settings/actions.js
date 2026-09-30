@@ -4,9 +4,9 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { and, asc, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { requireUser } from "@/lib/auth";
-import { getDb, schema } from "@/lib/db";
-import { passwordProblem } from "@/lib/passwords";
+import { requireUser, startSession } from "@/lib/auth";
+import { tenantDb, schema } from "@/lib/db";
+import { hashPassword, passwordProblem } from "@/lib/passwords";
 
 const { users, organizations, stages, deals, activities, leads, contacts, companies } = schema;
 
@@ -23,7 +23,7 @@ export async function updateProfile(_prev, formData) {
   const { user } = await requireUser();
   const name = String(formData.get("name") ?? "").trim();
   if (name.length < 2) return fail("Name is too short");
-  const db = await getDb();
+  const db = await tenantDb(user.orgId);
   await db.update(users).set({ name }).where(eq(users.id, user.id));
   revalidatePath("/", "layout");
   return ok("Profile saved");
@@ -35,14 +35,17 @@ export async function changePassword(_prev, formData) {
   const next = String(formData.get("next") ?? "");
   const problem = passwordProblem(next);
   if (problem) return fail(problem);
-  const db = await getDb();
+  const db = await tenantDb(user.orgId);
   const [row] = await db.select({ hash: users.passwordHash }).from(users).where(eq(users.id, user.id));
   if (!(await bcrypt.compare(current, row.hash))) return fail("Current password is wrong");
-  await db
+  // A new token version signs out every other device; this one gets a fresh session.
+  const [updated] = await db
     .update(users)
-    .set({ passwordHash: await bcrypt.hash(next, 10), mustChangePassword: false })
-    .where(eq(users.id, user.id));
-  return ok("Password changed");
+    .set({ passwordHash: await hashPassword(next), mustChangePassword: false, tokenVersion: sql`${users.tokenVersion} + 1` })
+    .where(eq(users.id, user.id))
+    .returning({ id: users.id, orgId: users.orgId, tokenVersion: users.tokenVersion });
+  await startSession(updated);
+  return ok("Password changed. Other devices have been signed out.");
 }
 
 const workspaceSchema = z.object({
@@ -59,7 +62,7 @@ export async function updateWorkspace(_prev, formData) {
   }
   const parsed = workspaceSchema.safeParse({ name: formData.get("name"), currency: formData.get("currency") });
   if (!parsed.success) return fail(parsed.error.issues[0].message);
-  const db = await getDb();
+  const db = await tenantDb(org.id);
   await db.update(organizations).set(parsed.data).where(eq(organizations.id, org.id));
   revalidatePath("/", "layout");
   return ok("Workspace saved");
@@ -78,7 +81,7 @@ export async function saveStage(_prev, formData) {
   const probability = Math.max(0, Math.min(100, Number(formData.get("probability")) || 0));
   if (!name) return fail("Stage needs a name");
   const id = String(formData.get("id") ?? "");
-  const db = await getDb();
+  const db = await tenantDb(org.id);
 
   if (id) {
     await db.update(stages).set({ name, probability }).where(and(eq(stages.id, id), eq(stages.orgId, org.id), eq(stages.kind, "open")));
@@ -100,7 +103,7 @@ export async function saveStage(_prev, formData) {
 
 export async function moveStage(id, direction) {
   const { org } = await requireAdmin();
-  const db = await getDb();
+  const db = await tenantDb(org.id);
   const open = await db
     .select()
     .from(stages)
@@ -119,7 +122,7 @@ export async function moveStage(id, direction) {
 
 export async function deleteStage(id) {
   const { org } = await requireAdmin();
-  const db = await getDb();
+  const db = await tenantDb(org.id);
   const [stage] = await db.select().from(stages).where(and(eq(stages.id, id), eq(stages.orgId, org.id)));
   if (!stage || stage.kind !== "open") return { error: "Won and Lost stages can't be removed" };
   const [{ n }] = await db.select({ n: sql`count(*)`.mapWith(Number) }).from(deals).where(eq(deals.stageId, id));
@@ -160,18 +163,23 @@ export async function addTeammate(_prev, formData) {
   if (!parsed.success) return fail(parsed.error.issues[0].message);
   const problem = passwordProblem(parsed.data.password);
   if (problem) return fail(`Temporary password: ${problem.toLowerCase()}`);
-  const db = await getDb();
-  const [exists] = await db.select({ id: users.id }).from(users).where(eq(users.email, parsed.data.email));
-  if (exists) return fail("That email already has an account");
-  await db.insert(users).values({
-    orgId: org.id,
-    name: parsed.data.name,
-    email: parsed.data.email,
-    role: parsed.data.role,
-    passwordHash: await bcrypt.hash(parsed.data.password, 10),
-    // They choose their own password the first time they sign in.
-    mustChangePassword: true,
-  });
+  const db = await tenantDb(org.id);
+  try {
+    await db.insert(users).values({
+      orgId: org.id,
+      name: parsed.data.name,
+      email: parsed.data.email,
+      role: parsed.data.role,
+      passwordHash: await hashPassword(parsed.data.password),
+      // They choose their own password the first time they sign in.
+      mustChangePassword: true,
+    });
+  } catch (e) {
+    // Emails are unique across all workspaces. Row-level security hides other workspaces' users,
+    // so the database's unique index is what spots a clash.
+    if ((e?.code ?? e?.cause?.code) === "23505") return fail("That email already has an account");
+    throw e;
+  }
   revalidatePath("/settings");
   return ok(`${parsed.data.name} can now sign in, and will be asked to choose their own password`);
 }
@@ -179,7 +187,7 @@ export async function addTeammate(_prev, formData) {
 export async function removeTeammate(id) {
   const { user, org } = await requireAdmin();
   if (id === user.id) return { error: "You can't remove yourself" };
-  const db = await getDb();
+  const db = await tenantDb(org.id);
   await db.delete(users).where(and(eq(users.id, id), eq(users.orgId, org.id), sql`${users.role} <> 'owner'`));
   revalidatePath("/settings");
   return { ok: true };
@@ -191,7 +199,7 @@ export async function clearWorkspaceData(_prev, formData) {
   const { user, org } = await requireUser();
   if (user.role !== "owner") return fail("Only the workspace owner can do this");
   if (String(formData.get("confirm") ?? "").trim() !== org.name) return fail(`Type "${org.name}" to confirm`);
-  const db = await getDb();
+  const db = await tenantDb(org.id);
   await db.transaction(async (tx) => {
     for (const table of [activities, deals, leads, contacts, companies]) {
       await tx.delete(table).where(eq(table.orgId, org.id));

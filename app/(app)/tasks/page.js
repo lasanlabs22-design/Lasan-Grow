@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { and, asc, desc, eq, gte, ne } from "drizzle-orm";
 import { requireUser } from "@/lib/auth";
-import { getDb, schema } from "@/lib/db";
+import { tenantDb, schema } from "@/lib/db";
 import { getFormOptions } from "@/lib/queries/options";
 import { fullName } from "@/lib/format";
 import { PageHeader, cx } from "@/components/ui";
@@ -24,7 +24,7 @@ export default async function TasksPage({ searchParams }) {
   const { org } = await requireUser();
   const params = await searchParams;
   const type = TYPES.some(([t]) => t === params.type) ? params.type : "all";
-  const db = await getDb();
+  const db = await tenantDb(org.id);
 
   const base = [eq(activities.orgId, org.id), ne(activities.type, "note")];
   if (type !== "all") base.push(eq(activities.type, type));

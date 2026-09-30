@@ -1,6 +1,6 @@
 import { asc, eq, sql } from "drizzle-orm";
 import { requireUser } from "@/lib/auth";
-import { getDb, schema } from "@/lib/db";
+import { tenantDb, schema } from "@/lib/db";
 import { PageHeader } from "@/components/ui";
 import {
   AppearancePicker,
@@ -19,7 +19,7 @@ const { stages, deals, users } = schema;
 
 export default async function SettingsPage() {
   const { user, org } = await requireUser();
-  const db = await getDb();
+  const db = await tenantDb(org.id);
   const isAdmin = ["owner", "admin"].includes(user.role);
 
   const [stageRows, team] = await Promise.all([

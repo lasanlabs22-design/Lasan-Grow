@@ -2,7 +2,7 @@ import Link from "next/link";
 import { and, asc, eq, sql } from "drizzle-orm";
 import { Building2, MapPin, Users } from "lucide-react";
 import { requireUser } from "@/lib/auth";
-import { getDb, schema } from "@/lib/db";
+import { tenantDb, schema } from "@/lib/db";
 import { money } from "@/lib/format";
 import { matchWords } from "@/lib/search";
 import { Card, EmptyState, PageHeader, cx } from "@/components/ui";
@@ -32,7 +32,7 @@ export default async function CompaniesPage({ searchParams }) {
   const params = await searchParams;
   const q = typeof params.q === "string" ? params.q.trim() : "";
   const sort = SORTS.some(([s]) => s === params.sort) ? params.sort : "pipeline";
-  const db = await getDb();
+  const db = await tenantDb(org.id);
 
   const filters = [eq(companies.orgId, org.id)];
   if (q) filters.push(matchWords(q, [companies.name, companies.domain, companies.industry, companies.city]));

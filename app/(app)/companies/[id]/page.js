@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { and, asc, desc, eq, inArray, or } from "drizzle-orm";
 import { ArrowLeft, Globe, MapPin, Users, Factory, Plus } from "lucide-react";
 import { requireUser } from "@/lib/auth";
-import { getDb, schema } from "@/lib/db";
+import { tenantDb, schema } from "@/lib/db";
 import { fullName, money } from "@/lib/format";
 import { Avatar, Badge, Card, CardHeader, LinkButton } from "@/components/ui";
 import { ActivityComposer, ActivityTimeline } from "@/components/activity";
@@ -17,7 +17,7 @@ const { companies, contacts, deals, stages, activities } = schema;
 export default async function CompanyPage({ params }) {
   const { id } = await params;
   const { org } = await requireUser();
-  const db = await getDb();
+  const db = await tenantDb(org.id);
 
   const [company] = await db
     .select()

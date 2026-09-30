@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { and, desc, eq, ne, sql } from "drizzle-orm";
 import { requireUser } from "@/lib/auth";
-import { getDb, schema } from "@/lib/db";
+import { tenantDb, schema } from "@/lib/db";
 import { money } from "@/lib/format";
 import { matchWords } from "@/lib/search";
 import { Card, PageHeader, cx } from "@/components/ui";
@@ -26,7 +26,7 @@ export default async function LeadsPage({ searchParams }) {
   const params = await searchParams;
   const status = TABS.some(([s]) => s === params.status) ? params.status : "active";
   const q = typeof params.q === "string" ? params.q.trim() : "";
-  const db = await getDb();
+  const db = await tenantDb(org.id);
 
   const filters = [eq(leads.orgId, org.id)];
   if (status === "active") filters.push(ne(leads.status, "converted"), ne(leads.status, "unqualified"));

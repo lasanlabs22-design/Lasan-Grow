@@ -1,12 +1,12 @@
 import { and, eq, gte, lte, lt, sql } from "drizzle-orm";
 import { requireUser } from "@/lib/auth";
-import { getDb, schema } from "@/lib/db";
+import { tenantDb, schema } from "@/lib/db";
 import { WelcomeScreen } from "./welcome-screen";
 
 export const metadata = { title: "Welcome" };
 
 async function getWelcomeStats(orgId) {
-  const db = await getDb();
+  const db = await tenantDb(orgId);
   const { deals, activities } = schema;
   const now = new Date();
   const endOfToday = new Date(now);

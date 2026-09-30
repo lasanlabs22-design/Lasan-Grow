@@ -5,7 +5,7 @@ import { and, asc, eq, ilike } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
-import { getDb, schema } from "@/lib/db";
+import { tenantDb, schema } from "@/lib/db";
 import { emptyToNull } from "@/lib/guard";
 import { scoreLead } from "@/lib/lead-score";
 
@@ -51,7 +51,7 @@ export async function saveLead(_prev, formData) {
   };
   values.score = scoreLead(values).score;
 
-  const db = await getDb();
+  const db = await tenantDb(org.id);
   const id = emptyToNull(formData.get("id"));
   if (id) {
     const res = await db
@@ -70,7 +70,7 @@ export async function saveLead(_prev, formData) {
 export async function setLeadStatus(id, status) {
   const { org } = await requireUser();
   if (!STATUSES.includes(status)) throw new Error("Bad status");
-  const db = await getDb();
+  const db = await tenantDb(org.id);
   const [lead] = await db.select().from(leads).where(and(eq(leads.id, id), eq(leads.orgId, org.id))).limit(1);
   if (!lead) throw new Error("Not found");
   const { score } = scoreLead({ ...lead, status });
@@ -81,7 +81,7 @@ export async function setLeadStatus(id, status) {
 
 export async function deleteLead(id) {
   const { org } = await requireUser();
-  const db = await getDb();
+  const db = await tenantDb(org.id);
   await db.delete(leads).where(and(eq(leads.id, id), eq(leads.orgId, org.id)));
   refresh();
 }
@@ -89,7 +89,7 @@ export async function deleteLead(id) {
 // Lead → company (matched by name or created) + contact + open deal in the first stage.
 export async function convertLead(id) {
   const { user, org } = await requireUser();
-  const db = await getDb();
+  const db = await tenantDb(org.id);
 
   const dealId = await db.transaction(async (tx) => {
     const [lead] = await tx.select().from(leads).where(and(eq(leads.id, id), eq(leads.orgId, org.id))).limit(1);

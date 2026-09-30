@@ -4,7 +4,7 @@ import { z } from "zod";
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth";
-import { getDb, schema } from "@/lib/db";
+import { tenantDb, schema } from "@/lib/db";
 import { ownedId, emptyToNull } from "@/lib/guard";
 
 const { activities, deals, contacts, companies, leads } = schema;
@@ -31,7 +31,7 @@ export async function createActivity(_prev, formData) {
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const { type, subject, notes, dueAt } = parsed.data;
 
-  const db = await getDb();
+  const db = await tenantDb(org.id);
   const links = {};
   try {
     links.dealId = await ownedId(db, deals, emptyToNull(formData.get("dealId")), org.id);
@@ -67,7 +67,7 @@ export async function createActivity(_prev, formData) {
 
 export async function toggleActivity(id, done) {
   const { org } = await requireUser();
-  const db = await getDb();
+  const db = await tenantDb(org.id);
   const [row] = await db
     .update(activities)
     .set({ done, completedAt: done ? new Date() : null })
@@ -79,7 +79,7 @@ export async function toggleActivity(id, done) {
 
 export async function deleteActivity(id) {
   const { org } = await requireUser();
-  const db = await getDb();
+  const db = await tenantDb(org.id);
   await db.delete(activities).where(and(eq(activities.id, id), eq(activities.orgId, org.id)));
   revalidateAll();
 }

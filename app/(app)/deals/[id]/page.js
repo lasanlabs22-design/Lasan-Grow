@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { and, desc, eq } from "drizzle-orm";
 import { ArrowLeft, Building2, CalendarDays, Mail, Megaphone, Phone, User, Clock } from "lucide-react";
 import { requireUser } from "@/lib/auth";
-import { getDb, schema } from "@/lib/db";
+import { tenantDb, schema } from "@/lib/db";
 import { getFormOptions } from "@/lib/queries/options";
 import { money, longDate, fullName, relativeTime } from "@/lib/format";
 import { Avatar, Badge, Card, CardHeader } from "@/components/ui";
@@ -31,7 +31,7 @@ function Detail({ icon: Icon, label, children }) {
 export default async function DealPage({ params }) {
   const { id } = await params;
   const { org } = await requireUser();
-  const db = await getDb();
+  const db = await tenantDb(org.id);
 
   const [row] = await db
     .select({ deal: deals, stage: stages, contact: contacts, company: companies, owner: { name: users.name } })

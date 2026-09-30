@@ -5,7 +5,7 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
-import { getDb, schema } from "@/lib/db";
+import { tenantDb, schema } from "@/lib/db";
 import { ownedId, emptyToNull } from "@/lib/guard";
 
 const { deals, stages, contacts, companies } = schema;
@@ -56,7 +56,7 @@ export async function saveDeal(_prev, formData) {
   const input = parsed.data;
   const id = emptyToNull(formData.get("id"));
 
-  const db = await getDb();
+  const db = await tenantDb(org.id);
   try {
     const stage = await resolveStage(db, input.stageId, org.id);
     const values = {
@@ -91,7 +91,7 @@ export async function saveDeal(_prev, formData) {
 
 export async function moveDeal(dealId, stageId, lostReason) {
   const { org } = await requireUser();
-  const db = await getDb();
+  const db = await tenantDb(org.id);
   const stage = await resolveStage(db, stageId, org.id);
   const [existing] = await db.select().from(deals).where(and(eq(deals.id, dealId), eq(deals.orgId, org.id))).limit(1);
   if (!existing) throw new Error("Deal not found");
@@ -114,7 +114,7 @@ export async function moveDeal(dealId, stageId, lostReason) {
 export async function deleteDeal(formData) {
   const { org } = await requireUser();
   const id = String(formData.get("id") ?? "");
-  const db = await getDb();
+  const db = await tenantDb(org.id);
   await db.delete(deals).where(and(eq(deals.id, id), eq(deals.orgId, org.id)));
   revalidatePath("/deals");
   revalidatePath("/dashboard");
