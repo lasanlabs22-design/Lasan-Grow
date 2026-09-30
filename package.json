@@ -12,7 +12,11 @@
     "db:migrate": "drizzle-kit migrate --config drizzle.config.mjs",
     "db:studio": "drizzle-kit studio --config drizzle.config.mjs",
     "platform:admin": "node scripts/platform-admin.mjs",
-    "test:rls": "node scripts/test-rls.mjs"
+    "test:rls": "node scripts/test-rls.mjs",
+    "test:e2e": "playwright test",
+    "test:e2e:live": "node scripts/e2e-live.mjs",
+    "test:report": "playwright show-report playwright-report",
+    "test:e2e:watch": "node scripts/e2e-live.mjs --watch"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -32,6 +36,7 @@
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.8",
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "dotenv": "^18.0.2",
     "drizzle-kit": "^0.31.11",
