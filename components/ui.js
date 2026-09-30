@@ -8,18 +8,18 @@ export function cx(...parts) {
 }
 
 const BUTTON_BASE =
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg font-medium transition-all duration-150 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50";
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-semibold transition-colors duration-100 disabled:pointer-events-none disabled:opacity-50";
 const BUTTON_VARIANTS = {
-  primary: "bg-ink text-inverse hover:opacity-85 shadow-card",
-  secondary: "border border-line bg-surface text-ink hover:bg-surface-2 hover:border-line-strong",
+  primary: "border border-transparent bg-brand text-on-brand hover:bg-brand-hover",
+  secondary: "border border-line-strong bg-surface text-ink hover:bg-surface-2",
   ghost: "text-ink-2 hover:bg-surface-2 hover:text-ink",
-  danger: "bg-bad-bg text-bad hover:brightness-95",
-  success: "bg-[#0a8a0a] text-white hover:opacity-90 shadow-card",
+  danger: "border border-bad/40 bg-surface text-bad hover:bg-bad-bg",
+  success: "border border-transparent bg-good text-white hover:opacity-90",
 };
 const BUTTON_SIZES = {
-  sm: "h-8 px-3 text-[13px]",
-  md: "h-9 px-3.5 text-sm",
-  lg: "h-11 px-5 text-[15px]",
+  sm: "h-7 px-2.5 text-[13px]",
+  md: "h-8 px-3.5 text-sm",
+  lg: "h-10 px-5 text-sm",
   icon: "h-8 w-8",
 };
 
@@ -37,7 +37,7 @@ export function LinkButton({ variant, size, className, ...props }) {
 
 export function Card({ className, children, ...props }) {
   return (
-    <div className={cx("rounded-2xl border border-line bg-surface shadow-card", className)} {...props}>
+    <div className={cx("rounded-md border border-line bg-surface shadow-card", className)} {...props}>
       {children}
     </div>
   );
@@ -45,10 +45,10 @@ export function Card({ className, children, ...props }) {
 
 export function CardHeader({ title, subtitle, action, className }) {
   return (
-    <div className={cx("flex items-start justify-between gap-4 px-5 pt-5", className)}>
+    <div className={cx("flex items-start justify-between gap-4 px-5 pt-4", className)}>
       <div className="min-w-0">
-        <h3 className="text-[15px] font-semibold tracking-tight">{title}</h3>
-        {subtitle && <p className="mt-0.5 text-[13px] text-ink-3">{subtitle}</p>}
+        <h3 className="text-sm font-semibold">{title}</h3>
+        {subtitle && <p className="mt-0.5 text-xs text-ink-3">{subtitle}</p>}
       </div>
       {action}
     </div>
@@ -60,7 +60,8 @@ const BADGE_TONES = {
   good: "bg-good-bg text-good border-transparent",
   bad: "bg-bad-bg text-bad border-transparent",
   warn: "bg-warn-bg text-warn border-transparent",
-  ink: "bg-ink text-inverse border-transparent",
+  ink: "bg-brand text-on-brand border-transparent",
+  brand: "bg-brand-soft text-brand-ink border-transparent",
   outline: "bg-transparent text-ink-2 border-line-strong",
 };
 
@@ -68,7 +69,7 @@ export function Badge({ tone = "neutral", className, children }) {
   return (
     <span
       className={cx(
-        "inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2 py-0.5 text-[11.5px] font-medium",
+        "inline-flex items-center gap-1 whitespace-nowrap rounded-sm border px-1.5 py-px text-[11.5px] font-semibold",
         BADGE_TONES[tone],
         className
       )}
@@ -98,10 +99,10 @@ export function Avatar({ name = "", size = 32, className }) {
 }
 
 const FIELD_BASE =
-  "w-full rounded-lg border border-line bg-surface px-3 text-sm text-ink placeholder:text-ink-3 transition-colors hover:border-line-strong focus:border-ink focus:outline-none";
+  "w-full rounded-md border border-line-strong bg-surface px-2.5 text-sm text-ink placeholder:text-ink-3 transition-colors hover:border-ink-3 focus:border-brand focus:shadow-[0_0_0_1px_var(--brand)] focus:outline-none";
 
 export function Input({ className, ...props }) {
-  return <input className={cx(FIELD_BASE, "h-10", className)} {...props} />;
+  return <input className={cx(FIELD_BASE, "h-9", className)} {...props} />;
 }
 
 export function Textarea({ className, ...props }) {
@@ -110,7 +111,7 @@ export function Textarea({ className, ...props }) {
 
 export function Select({ className, children, ...props }) {
   return (
-    <select className={cx(FIELD_BASE, "h-10 appearance-none bg-no-repeat pr-8", className)} {...props}>
+    <select className={cx(FIELD_BASE, "select-chevron h-9 appearance-none pr-8", className)} {...props}>
       {children}
     </select>
   );
@@ -119,18 +120,19 @@ export function Select({ className, children, ...props }) {
 export function Field({ label, hint, children, className }) {
   return (
     <label className={cx("block", className)}>
-      <span className="mb-1.5 block text-[13px] font-medium text-ink-2">{label}</span>
+      <span className="mb-1 block text-[13px] font-semibold text-ink-2">{label}</span>
       {children}
       {hint && <span className="mt-1 block text-xs text-ink-3">{hint}</span>}
     </label>
   );
 }
 
+// The title row of a page: record type and name on the left, its commands on the right.
 export function PageHeader({ title, description, children }) {
   return (
-    <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div className="mb-5 flex flex-col gap-3 border-b border-line pb-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <h1 className="font-display text-[28px] font-semibold leading-tight tracking-tight">{title}</h1>
+        <h1 className="text-[22px] font-semibold leading-tight">{title}</h1>
         {description && <p className="mt-1 text-sm text-ink-3">{description}</p>}
       </div>
       {children && <div className="flex flex-wrap items-center gap-2">{children}</div>}
@@ -142,7 +144,7 @@ export function EmptyState({ icon: Icon, title, description, children }) {
   return (
     <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
       {Icon && (
-        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-line bg-surface-2">
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-md border border-line bg-surface-2">
           <Icon size={20} className="text-ink-2" />
         </div>
       )}
@@ -165,7 +167,7 @@ export function Th({ className, children }) {
   return (
     <th
       className={cx(
-        "border-b border-line px-4 py-2.5 text-left text-[11.5px] font-medium uppercase tracking-wider text-ink-3 first:pl-5 last:pr-5",
+        "border-b border-line-strong bg-surface-2 px-4 py-2 text-left text-xs font-semibold text-ink-2 first:pl-5 last:pr-5",
         className
       )}
     >
@@ -176,6 +178,6 @@ export function Th({ className, children }) {
 
 export function Td({ className, children }) {
   return (
-    <td className={cx("border-b border-line px-4 py-3 first:pl-5 last:pr-5", className)}>{children}</td>
+    <td className={cx("border-b border-line px-4 py-2.5 first:pl-5 last:pr-5", className)}>{children}</td>
   );
 }

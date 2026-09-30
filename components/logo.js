@@ -3,7 +3,7 @@ import { cx } from "@/components/ui";
 export function LogoMark({ size = 28, className }) {
   return (
     <span
-      className={cx("inline-flex shrink-0 items-center justify-center rounded-[9px] bg-ink text-inverse", className)}
+      className={cx("inline-flex shrink-0 items-center justify-center rounded-md bg-brand text-on-brand", className)}
       style={{ width: size, height: size }}
       aria-hidden
     >
@@ -22,13 +22,18 @@ export function LogoMark({ size = 28, className }) {
   );
 }
 
-export function Logo({ className }) {
+// `product` adds the app name after a divider, as in "Lasan Grow | Sales".
+export function Logo({ className, size, product }) {
   return (
     <span className={cx("inline-flex items-center gap-2.5", className)}>
-      <LogoMark />
-      <span className="font-display text-[17px] font-semibold tracking-tight">
-        Lasan<span className="text-ink-3">Grow</span>
-      </span>
+      <LogoMark size={size} />
+      <span className="text-[16px] font-semibold">Lasan Grow</span>
+      {product && (
+        <>
+          <span className="h-4 w-px bg-current opacity-30" aria-hidden />
+          <span className="text-[15px] font-normal opacity-85">{product}</span>
+        </>
+      )}
     </span>
   );
 }
