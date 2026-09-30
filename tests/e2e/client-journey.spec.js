@@ -8,6 +8,8 @@
 // development account). Everything it creates is named "E2E <stamp>" / *@example.invalid.
 import { test, expect } from "@playwright/test";
 
+// Where the console lives when it has its own address (ops.lasangrow.com); same site otherwise.
+const CONSOLE = process.env.E2E_CONSOLE_URL || "";
 const CONSOLE_EMAIL = process.env.E2E_CONSOLE_EMAIL || "ops@lasan.test";
 const CONSOLE_PASSWORD = process.env.E2E_CONSOLE_PASSWORD || "OpsPass123";
 // A word that exists only in another workspace, to prove search can't reach it (optional).
@@ -102,7 +104,7 @@ test("Public: /signup forwards to sign-in and app pages need a sign-in", async (
 
 test("Console: staff sign in", async () => {
   const p = (shown = s.staff);
-  await go(p, "/platform/login");
+  await go(p, CONSOLE + "/platform/login");
   await p.fill('input[name="email"]', CONSOLE_EMAIL);
   await p.fill('input[name="password"]', CONSOLE_PASSWORD);
   await p.click('button[type="submit"]');
@@ -111,7 +113,7 @@ test("Console: staff sign in", async () => {
 
 test("Console: create a workspace for a new client", async () => {
   const p = (shown = s.staff);
-  await go(p, "/platform");
+  await go(p, CONSOLE + "/platform");
   await p.getByRole("button", { name: "New workspace" }).click();
   await p.fill('input[name="company"]', WORKSPACE);
   await p.fill('input[name="ownerName"]', "Olivia Owner");
@@ -419,7 +421,7 @@ test("Security: 5 wrong passwords lock the account", async () => {
 
 test("Console: the workspace list shows the client's 2 people and 2 deals", async () => {
   const p = (shown = s.staff);
-  await go(p, "/platform");
+  await go(p, CONSOLE + "/platform");
   // Columns: Company, Owner, Status, People, Deals, …
   const row = p.locator("tr", { hasText: WORKSPACE }).first();
   await expect(row.locator("td").nth(3)).toHaveText("2");
@@ -431,7 +433,7 @@ test("Console: suspending signs the client out and blocks sign-in", async () => 
   // The owner is signed in, then staff suspend the workspace from the console.
   await signIn(s.owner, OWNER, OWNER_PASSWORD);
   await expect(s.owner).toHaveURL(/\/welcome/);
-  await go(p, "/platform");
+  await go(p, CONSOLE + "/platform");
   const row = p.locator("tr", { hasText: WORKSPACE }).first();
   await row.getByRole("button", { name: "Suspend" }).click();
   await expect(row.getByText("Suspended")).toBeVisible();
@@ -443,7 +445,7 @@ test("Console: suspending signs the client out and blocks sign-in", async () => 
 
 test("Console: reactivating lets the client back in", async () => {
   const p = (shown = s.staff);
-  await go(p, "/platform");
+  await go(p, CONSOLE + "/platform");
   const row = p.locator("tr", { hasText: WORKSPACE }).first();
   await row.getByRole("button", { name: "Reactivate" }).click();
   await expect(row.getByText("Active", { exact: true })).toBeVisible();
@@ -453,7 +455,7 @@ test("Console: reactivating lets the client back in", async () => {
 
 test("Console: resetting the owner's password revokes the old one", async () => {
   const p = (shown = s.staff);
-  await go(p, "/platform");
+  await go(p, CONSOLE + "/platform");
   const row = p.locator("tr", { hasText: WORKSPACE }).first();
   await row.getByRole("button", { name: "Reset owner password" }).click();
   const fresh = await shownPassword(p);
@@ -482,7 +484,7 @@ test("Phone: the site fits a phone screen", async () => {
 
 test("Console: sign out", async () => {
   const p = (shown = s.staff);
-  await go(p, "/platform");
+  await go(p, CONSOLE + "/platform");
   await p.getByRole("button", { name: /Account:/ }).click();
   await p.getByRole("button", { name: "Sign out" }).click();
   await expect(p).toHaveURL(/\/platform\/login/);

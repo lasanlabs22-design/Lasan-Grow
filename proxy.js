@@ -18,9 +18,11 @@ const APP_PREFIXES = [
 const isConsolePath = (p) => p === "/platform" || p.startsWith("/platform/");
 
 /**
- * Which address serves what. With APP_HOST and CONSOLE_HOST set (for example grow.lasanlabs.com and
- * ops.lasanlabs.com), customers never see the console on their address, and the console address
- * serves nothing else. Any other address (localhost, Vercel previews) serves everything.
+ * Which address serves what. With APP_HOST and CONSOLE_HOST set (app.lasangrow.com and
+ * ops.lasangrow.com in production), customers never see the console on their address, and the
+ * console address serves nothing else. LEGACY_HOSTS (comma-separated, e.g. the old
+ * lasan-grow.vercel.app) forward to the right new address. Any other address (localhost, Vercel
+ * preview URLs) serves everything.
  */
 function routeByHost(request) {
   const appHost = process.env.APP_HOST?.toLowerCase();
@@ -37,6 +39,11 @@ function routeByHost(request) {
   if (host === appHost && isConsolePath(pathname)) {
     // As far as anyone on the customer address can tell, the console doesn't exist.
     return new NextResponse("Not found", { status: 404 });
+  }
+  const legacy = (process.env.LEGACY_HOSTS ?? "").toLowerCase().split(",").map((h) => h.trim()).filter(Boolean);
+  if (legacy.includes(host)) {
+    const to = isConsolePath(pathname) ? consoleHost : appHost;
+    return NextResponse.redirect(`https://${to}${pathname}${search}`, 308);
   }
   return null;
 }
