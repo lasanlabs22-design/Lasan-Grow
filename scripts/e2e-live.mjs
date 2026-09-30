@@ -46,6 +46,12 @@ try {
   if (run("node", ["scripts/platform-admin.mjs", "--email", BOT, "--name", "E2E Bot", "--password", password]) !== 0) {
     throw new Error("Couldn't create the temporary console account");
   }
+  // A second company holding a record with a word nothing else has, so the suite can prove the new
+  // client's search never reaches another company's data. Removed with the rest of the E2E data.
+  const probeWord = `Zqprobe${randomBytes(3).toString("hex")}`;
+  const [probe] = await sql`insert into organizations (name) values (${`E2E probe ${probeWord}`}) returning id`;
+  await sql`insert into companies (org_id, name) values (${probe.id}, ${`${probeWord} Industries`})`;
+  await sql`insert into contacts (org_id, first_name, last_name) values (${probe.id}, ${probeWord}, 'Contact')`;
   console.log(`\nRunning the suite against ${base} (website: ${siteBase}, console: ${consoleBase})\n`);
   status = run("npx", ["playwright", "test"], {
     E2E_BASE_URL: base,
@@ -53,6 +59,7 @@ try {
     E2E_CONSOLE_URL: consoleBase,
     E2E_CONSOLE_EMAIL: BOT,
     E2E_CONSOLE_PASSWORD: password,
+    E2E_OTHER_WORKSPACE_TERM: probeWord,
     ...(watch ? { E2E_HEADED: "1" } : {}),
   });
 } catch (e) {
