@@ -291,7 +291,7 @@ function TeammateForm({ onDone }) {
         <Field label="Email">
           <Input name="email" type="email" required />
         </Field>
-        <Field label="Temporary password" hint="Share it with them privately; they can change it in Settings.">
+        <Field label="Temporary password" hint="8+ characters with a letter and a number. Share it privately; they choose their own when they first sign in.">
           <Input name="password" type="text" minLength={8} required />
         </Field>
         <Field label="Role">

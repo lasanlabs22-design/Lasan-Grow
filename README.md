@@ -10,7 +10,8 @@ Powered by Lasan Labs.
 
 | Area | What it does |
 | --- | --- |
-| Welcome | Animated time-of-day greeting with live pipeline stats; confetti on first sign-up |
+| Welcome | Time-of-day greeting with today's pipeline, tasks due and deals closing |
+| Platform console | `/platform` for Lasan staff: create client workspaces, suspend/reactivate, reset owner passwords, manage the Lasan team (no public sign-up) |
 | Dashboard | Won this month, open and weighted pipeline, win rate, new leads, 12-month revenue trend, stage funnel, win sources, lost reasons, activity heatmap |
 | Leads | 0–100 score (explained factor by factor), status tabs, inline status changes, one-click convert to contact + company + deal |
 | Deals | Kanban board with drag and drop and Won/Lost drop zones, list view, detail page with stage stepper and activity log |
@@ -58,9 +59,10 @@ After changing `lib/db/schema.js`, run `npm run db:generate` and commit the new 
 
 ```text
 app/
-  (auth)/          login, signup and their server actions
+  (auth)/          sign-in, first-sign-in password change and their server actions
   (app)/           signed-in app: dashboard, leads, deals, contacts, companies, tasks, settings
   welcome/         post-login welcome screen
+  platform/        platform console (Lasan staff): workspaces, Lasan team, its own sign-in
 components/        UI primitives, charts, modals, activity timeline, forms
 lib/
   db/              Drizzle schema and connection (Postgres or embedded PGlite)
@@ -68,12 +70,27 @@ lib/
   auth.js          session helpers (JWT cookie)
   lead-score.js    lead scoring rules
   seed.js          default stages and sample data
-proxy.js           redirects signed-out users away from app pages
+proxy.js           sign-in redirects, and which domain serves the app vs the console
+scripts/           platform-admin.mjs: create the first console admin
 drizzle/           SQL migrations
 ```
+
+## Platform console and domains
+
+Customers can't sign themselves up: Lasan staff create each workspace at `/platform`.
+
+1. Create the first console admin from a terminal (uses `DATABASE_URL` from `.env.local`, so this is the live database):
+   ```bash
+   npm run platform:admin -- --email you@lasanlabs.com --name "Your Name" --password "Choose-a-strong-1"
+   ```
+   The same script resets a password (`--email … --password …`), changes a role (`--role staff|admin`), disables or enables (`--disable` / `--enable`) and lists accounts (`--list`). After that, admins add colleagues from **Lasan team** in the console.
+2. Sign in at `/platform/login`.
+3. For separate domains (like `app.lasanpeople.com` / `ops.lasanpeople.com` in Lasan People), add both domains to the Vercel project and set `APP_HOST` and `CONSOLE_HOST` (e.g. `grow.lasanlabs.com` and `ops.grow.lasanlabs.com`). The console then answers only on `CONSOLE_HOST`, and the customer domain returns 404 for `/platform`. With them unset, every address serves everything.
 
 ## Security notes
 
 - Every query and server action is scoped to the signed-in user's workspace, and linked records (contact, company, stage) are checked for ownership before they're written.
 - Passwords are hashed with bcrypt, and sessions are signed with `SESSION_SECRET` in httpOnly cookies.
 - Workspace settings, stage edits and team management need the owner or admin role. Clearing all data needs the owner.
+- Console accounts are separate from workspace users, with their own cookie scoped to `/platform` and a 12-hour session. Every console page and action re-checks the account; changing a console account's password, role or status signs it out everywhere, and 5 wrong passwords lock it for 15 minutes.
+- Suspending a workspace locks its users out on their next request. Passwords set by someone else (console or workspace admin) must be replaced at first sign-in.

@@ -6,6 +6,7 @@ import { and, asc, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth";
 import { getDb, schema } from "@/lib/db";
+import { passwordProblem } from "@/lib/passwords";
 
 const { users, organizations, stages, deals, activities, leads, contacts, companies } = schema;
 
@@ -32,11 +33,15 @@ export async function changePassword(_prev, formData) {
   const { user } = await requireUser();
   const current = String(formData.get("current") ?? "");
   const next = String(formData.get("next") ?? "");
-  if (next.length < 8) return fail("New password needs at least 8 characters");
+  const problem = passwordProblem(next);
+  if (problem) return fail(problem);
   const db = await getDb();
   const [row] = await db.select({ hash: users.passwordHash }).from(users).where(eq(users.id, user.id));
   if (!(await bcrypt.compare(current, row.hash))) return fail("Current password is wrong");
-  await db.update(users).set({ passwordHash: await bcrypt.hash(next, 10) }).where(eq(users.id, user.id));
+  await db
+    .update(users)
+    .set({ passwordHash: await bcrypt.hash(next, 10), mustChangePassword: false })
+    .where(eq(users.id, user.id));
   return ok("Password changed");
 }
 
@@ -135,7 +140,7 @@ export async function deleteStage(id) {
 const teammateSchema = z.object({
   name: z.string().trim().min(2, "Add their name"),
   email: z.email("Enter a valid email").transform((e) => e.toLowerCase()),
-  password: z.string().min(8, "Temporary password needs 8+ characters"),
+  password: z.string(),
   role: z.enum(["admin", "member"]),
 });
 
@@ -153,6 +158,8 @@ export async function addTeammate(_prev, formData) {
     role: formData.get("role") || "member",
   });
   if (!parsed.success) return fail(parsed.error.issues[0].message);
+  const problem = passwordProblem(parsed.data.password);
+  if (problem) return fail(`Temporary password: ${problem.toLowerCase()}`);
   const db = await getDb();
   const [exists] = await db.select({ id: users.id }).from(users).where(eq(users.email, parsed.data.email));
   if (exists) return fail("That email already has an account");
@@ -162,9 +169,11 @@ export async function addTeammate(_prev, formData) {
     email: parsed.data.email,
     role: parsed.data.role,
     passwordHash: await bcrypt.hash(parsed.data.password, 10),
+    // They choose their own password the first time they sign in.
+    mustChangePassword: true,
   });
   revalidatePath("/settings");
-  return ok(`${parsed.data.name} can now sign in`);
+  return ok(`${parsed.data.name} can now sign in, and will be asked to choose their own password`);
 }
 
 export async function removeTeammate(id) {
