@@ -136,7 +136,9 @@ export function WorkspaceForm({ name, currency, disabled }) {
   const [state, action] = useActionState(updateWorkspace, null);
   return (
     <form action={action} className="space-y-4">
-      <fieldset disabled={disabled} className="grid gap-4 sm:grid-cols-[1fr_160px]">
+      {/* Keyed by the saved values: React resets a form's fields after its action, which used to put
+          the old currency back next to "Workspace saved". Re-mounting with the new values avoids that. */}
+      <fieldset key={`${name}|${currency}`} disabled={disabled} className="grid gap-4 sm:grid-cols-[1fr_160px]">
         <Field label="Workspace name">
           <Input name="name" defaultValue={name} required />
         </Field>
@@ -278,7 +280,7 @@ export function StageEditor({ stages, disabled }) {
 function TeammateForm({ onDone }) {
   const [state, action] = useActionState(async (prev, fd) => {
     const res = await addTeammate(prev, fd);
-    if (res.ok) onDone();
+    if (res.ok) onDone(res.message);
     return res;
   }, null);
   return (
@@ -314,6 +316,7 @@ function TeammateForm({ onDone }) {
 export function TeamManager({ team, currentUserId, canManage }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [notice, setNotice] = useState(null);
   const [, startTransition] = useTransition();
   return (
     <div>
@@ -336,12 +339,14 @@ export function TeamManager({ team, currentUserId, canManage }) {
                 size="icon"
                 className="hover:text-bad"
                 aria-label={`Remove ${m.name}`}
-                onClick={() =>
+                onClick={() => {
+                  if (!window.confirm(`Remove ${m.name}? They lose access to this workspace straight away.`)) return;
                   startTransition(async () => {
                     await removeTeammate(m.id);
+                    setNotice(`${m.name} was removed.`);
                     router.refresh();
-                  })
-                }
+                  });
+                }}
               >
                 <Trash2 size={14} />
               </Button>
@@ -349,6 +354,11 @@ export function TeamManager({ team, currentUserId, canManage }) {
           </li>
         ))}
       </ul>
+      {notice && (
+        <p role="status" className="mt-2 flex items-center gap-1.5 text-sm text-good">
+          <CheckCircle2 size={14} /> {notice}
+        </p>
+      )}
       {canManage && (
         <>
           <Button variant="secondary" size="sm" className="mt-3" onClick={() => setOpen(true)}>
@@ -357,8 +367,9 @@ export function TeamManager({ team, currentUserId, canManage }) {
           <Modal open={open} onClose={() => setOpen(false)} title="Add a teammate" description="They'll share this workspace's leads, deals and contacts." wide>
             {() => (
               <TeammateForm
-                onDone={() => {
+                onDone={(message) => {
                   setOpen(false);
+                  setNotice(message);
                   router.refresh();
                 }}
               />
