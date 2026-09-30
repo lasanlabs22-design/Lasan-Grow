@@ -2,7 +2,7 @@ import Link from "next/link";
 import { and, desc, eq } from "drizzle-orm";
 import { Columns3, List, Plus } from "lucide-react";
 import { requireUser } from "@/lib/auth";
-import { getDb, schema } from "@/lib/db";
+import { tenantDb, schema } from "@/lib/db";
 import { getFormOptions } from "@/lib/queries/options";
 import { money, shortDate, longDate, fullName } from "@/lib/format";
 import { matchWords } from "@/lib/search";
@@ -15,7 +15,7 @@ export const metadata = { title: "Deals" };
 const { deals, stages, companies, contacts } = schema;
 
 async function loadDeals(orgId, { status, q }) {
-  const db = await getDb();
+  const db = await tenantDb(orgId);
   const filters = [eq(deals.orgId, orgId)];
   if (status && status !== "all") filters.push(eq(deals.status, status));
   if (q) filters.push(matchWords(q, [deals.title, companies.name, contacts.firstName, contacts.lastName]));

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { and, asc, desc, eq } from "drizzle-orm";
 import { ArrowLeft, Briefcase, Building2, Clock, Mail, Megaphone, Phone } from "lucide-react";
 import { requireUser } from "@/lib/auth";
-import { getDb, schema } from "@/lib/db";
+import { tenantDb, schema } from "@/lib/db";
 import { fullName, longDate, money } from "@/lib/format";
 import { Avatar, Card, CardHeader } from "@/components/ui";
 import { ActivityComposer, ActivityTimeline } from "@/components/activity";
@@ -29,7 +29,7 @@ function Row({ icon: Icon, label, children }) {
 export default async function ContactPage({ params }) {
   const { id } = await params;
   const { org } = await requireUser();
-  const db = await getDb();
+  const db = await tenantDb(org.id);
 
   const [row] = await db
     .select({ contact: contacts, company: companies })

@@ -89,6 +89,10 @@ Customers can't sign themselves up: Lasan staff create each workspace at `/platf
 
 ## Security notes
 
+- **Row-level security keeps workspaces apart in the database itself.** Customer code reaches data only through `tenantDb(org.id)`: every statement runs as the restricted role `lasan_grow_app` with the workspace pinned, and RLS policies on every workspace table hide and refuse other workspaces' rows even if a query forgets its filter. In production the app logs in as that role (`DATABASE_APP_URL`). The owner connection (`getAdminDb()`) is limited by an ESLint rule to sign-in, the console and the database layer. `npm run test:rls` proves the isolation inside a rolled-back transaction (safe against production). New tables need a policy and a grant in a migration, like `drizzle/0003_row_level_security.sql`.
+- 5 wrong passwords lock any account for 15 minutes. A password change or reset signs out every other session. Passwords use bcrypt cost 12.
+- Database connections require TLS. Every page sends a strict Content-Security-Policy, HSTS, nosniff and anti-framing headers.
+
 - Every query and server action is scoped to the signed-in user's workspace, and linked records (contact, company, stage) are checked for ownership before they're written.
 - Passwords are hashed with bcrypt, and sessions are signed with `SESSION_SECRET` in httpOnly cookies.
 - Workspace settings, stage edits and team management need the owner or admin role. Clearing all data needs the owner.

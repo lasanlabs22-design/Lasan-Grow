@@ -2,7 +2,7 @@
 
 import { and, eq } from "drizzle-orm";
 import { requireUser } from "@/lib/auth";
-import { getDb, schema } from "@/lib/db";
+import { tenantDb, schema } from "@/lib/db";
 import { matchWords } from "@/lib/search";
 
 // Best matches first: label starts with the query, then contains it, then word-by-word matches.
@@ -21,7 +21,7 @@ export async function searchAll(query) {
   const q = String(query ?? "").trim();
   if (q.length < 2) return [];
 
-  const db = await getDb();
+  const db = await tenantDb(org.id);
   const { deals, contacts, companies, leads } = schema;
   const LIMIT = 6;
 

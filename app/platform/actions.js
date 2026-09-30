@@ -5,8 +5,8 @@ import { z } from "zod";
 import { and, eq, ne, sql } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { getDb, schema } from "@/lib/db";
-import { passwordProblem, temporaryPassword } from "@/lib/passwords";
+import { getAdminDb, schema } from "@/lib/db";
+import { hashPassword, passwordProblem, temporaryPassword } from "@/lib/passwords";
 import { createDefaultStages, seedDemoData } from "@/lib/seed";
 import {
   customerSignInUrl,
@@ -20,7 +20,7 @@ const { platformAdmins, organizations, users } = schema;
 const MAX_FAILED_LOGINS = 5;
 const LOCK_MINUTES = 15;
 // Compared against when the email is unknown, so a wrong email takes as long as a wrong password.
-const DUMMY_HASH = "$2b$10$Nhy4nJnRWCdZmx770LP9C.3zTfjO52smpeO012C3M3oXntGPRMjxS";
+const DUMMY_HASH = "$2b$12$Phl7fabFXL60f99x1k2HKO2VQw5W6Qk3xU3yc91rltshBzi4LYjvK";
 
 const fail = (error, fields) => ({ error, fields, at: Date.now() });
 
@@ -43,7 +43,7 @@ export async function platformLogin(_prev, formData) {
   const wrong = fail("Wrong email or password", { email });
   if (!email || !password) return wrong;
 
-  const db = await getDb();
+  const db = await getAdminDb();
   const [admin] = await db.select().from(platformAdmins).where(eq(platformAdmins.email, email)).limit(1);
   if (!admin) {
     await bcrypt.compare(password, DUMMY_HASH);
@@ -86,13 +86,13 @@ export async function changePlatformPassword(_prev, formData) {
   if (problem) return fail(problem);
   if (next === current) return fail("Choose a password different from the current one");
 
-  const db = await getDb();
+  const db = await getAdminDb();
   const [row] = await db.select({ hash: platformAdmins.passwordHash }).from(platformAdmins).where(eq(platformAdmins.id, me.id));
   if (!(await bcrypt.compare(current, row.hash))) return fail("Current password is wrong");
   const [updated] = await db
     .update(platformAdmins)
     .set({
-      passwordHash: await bcrypt.hash(next, 12),
+      passwordHash: await hashPassword(next),
       mustChangePassword: false,
       tokenVersion: sql`${platformAdmins.tokenVersion} + 1`,
     })
@@ -136,11 +136,11 @@ export async function createWorkspace(_prev, formData) {
   if (problem) return fail(`Temporary password: ${problem.toLowerCase()}`, values);
   const password = typed || temporaryPassword();
 
-  const db = await getDb();
+  const db = await getAdminDb();
   const [taken] = await db.select({ id: users.id }).from(users).where(eq(users.email, ownerEmail)).limit(1);
   if (taken) return fail("That email already has a Lasan Grow account", values);
 
-  const passwordHash = await bcrypt.hash(password, 10);
+  const passwordHash = await hashPassword(password);
   const org = await db.transaction(async (tx) => {
     const [o] = await tx.insert(organizations).values({ name: company, currency, createdBy: me.id }).returning();
     const [owner] = await tx
@@ -163,7 +163,7 @@ export async function createWorkspace(_prev, formData) {
 export async function setWorkspaceStatus(orgId, status) {
   return asAdmin(async () => {
     if (!["active", "suspended"].includes(status)) return fail("Unknown status");
-    const db = await getDb();
+    const db = await getAdminDb();
     await db.update(organizations).set({ status }).where(eq(organizations.id, orgId));
     revalidatePath("/platform");
     return { ok: true, at: Date.now() };
@@ -173,11 +173,11 @@ export async function setWorkspaceStatus(orgId, status) {
 // Gives a workspace owner a new temporary password (they forgot theirs). They must replace it at sign-in.
 export async function resetOwnerPassword(userId) {
   return asAdmin(async () => {
-    const db = await getDb();
+    const db = await getAdminDb();
     const password = temporaryPassword();
     const [owner] = await db
       .update(users)
-      .set({ passwordHash: await bcrypt.hash(password, 10), mustChangePassword: true })
+      .set({ passwordHash: await hashPassword(password), mustChangePassword: true, tokenVersion: sql`${users.tokenVersion} + 1`, failedLogins: 0, lockedUntil: null })
       .where(and(eq(users.id, userId), eq(users.role, "owner")))
       .returning({ name: users.name, email: users.email, orgId: users.orgId });
     if (!owner) return fail("Owner not found");
@@ -204,13 +204,13 @@ export async function addPlatformMember(_prev, formData) {
     const values = { name: formData.get("name"), email: String(formData.get("email") ?? "").trim(), role: formData.get("role") || "staff" };
     const parsed = memberSchema.safeParse(values);
     if (!parsed.success) return fail(parsed.error.issues[0].message, values);
-    const db = await getDb();
+    const db = await getAdminDb();
     const [taken] = await db.select({ id: platformAdmins.id }).from(platformAdmins).where(eq(platformAdmins.email, parsed.data.email));
     if (taken) return fail("That email already has a console account", values);
     const password = temporaryPassword();
     await db.insert(platformAdmins).values({
       ...parsed.data,
-      passwordHash: await bcrypt.hash(password, 12),
+      passwordHash: await hashPassword(password),
       mustChangePassword: true,
       createdBy: me.id,
     });
@@ -232,7 +232,7 @@ export async function setPlatformMemberActive(id, active) {
   return asAdmin(async () => {
     const me = await requirePlatformAdmin({ role: "admin" });
     if (id === me.id) return fail("You can't deactivate yourself");
-    const db = await getDb();
+    const db = await getAdminDb();
     if (!active && (await wouldLeaveNoAdmin(db, id))) return fail("The console needs at least one active admin");
     await db
       .update(platformAdmins)
@@ -248,7 +248,7 @@ export async function setPlatformMemberRole(id, role) {
     const me = await requirePlatformAdmin({ role: "admin" });
     if (!["admin", "staff"].includes(role)) return fail("Unknown role");
     if (id === me.id) return fail("Ask another admin to change your own role");
-    const db = await getDb();
+    const db = await getAdminDb();
     if (role === "staff" && (await wouldLeaveNoAdmin(db, id))) return fail("The console needs at least one active admin");
     await db.update(platformAdmins).set({ role, tokenVersion: sql`${platformAdmins.tokenVersion} + 1` }).where(eq(platformAdmins.id, id));
     revalidatePath("/platform/team");
@@ -260,12 +260,12 @@ export async function resetPlatformMemberPassword(id) {
   return asAdmin(async () => {
     const me = await requirePlatformAdmin({ role: "admin" });
     if (id === me.id) return fail("Change your own password from the account menu");
-    const db = await getDb();
+    const db = await getAdminDb();
     const password = temporaryPassword();
     const [member] = await db
       .update(platformAdmins)
       .set({
-        passwordHash: await bcrypt.hash(password, 12),
+        passwordHash: await hashPassword(password),
         mustChangePassword: true,
         tokenVersion: sql`${platformAdmins.tokenVersion} + 1`,
         failedLogins: 0,

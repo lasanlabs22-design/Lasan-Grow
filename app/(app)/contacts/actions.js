@@ -5,7 +5,7 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
-import { getDb, schema } from "@/lib/db";
+import { tenantDb, schema } from "@/lib/db";
 import { ownedId, emptyToNull } from "@/lib/guard";
 
 const { contacts, companies } = schema;
@@ -33,7 +33,7 @@ export async function saveContact(_prev, formData) {
   });
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const d = parsed.data;
-  const db = await getDb();
+  const db = await tenantDb(org.id);
 
   let companyId;
   try {
@@ -70,7 +70,7 @@ export async function saveContact(_prev, formData) {
 
 export async function deleteContact(formData) {
   const { org } = await requireUser();
-  const db = await getDb();
+  const db = await tenantDb(org.id);
   await db.delete(contacts).where(and(eq(contacts.id, String(formData.get("id"))), eq(contacts.orgId, org.id)));
   revalidatePath("/contacts");
   redirect("/contacts");

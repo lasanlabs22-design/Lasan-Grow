@@ -5,7 +5,7 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
-import { getDb, schema } from "@/lib/db";
+import { tenantDb, schema } from "@/lib/db";
 import { emptyToNull } from "@/lib/guard";
 
 const { companies } = schema;
@@ -30,7 +30,7 @@ export async function saveCompany(_prev, formData) {
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const values = Object.fromEntries(Object.entries(parsed.data).map(([k, v]) => [k, k === "name" ? v : emptyToNull(v)]));
 
-  const db = await getDb();
+  const db = await tenantDb(org.id);
   const id = emptyToNull(formData.get("id"));
   if (id) {
     const res = await db
@@ -49,7 +49,7 @@ export async function saveCompany(_prev, formData) {
 
 export async function deleteCompany(formData) {
   const { org } = await requireUser();
-  const db = await getDb();
+  const db = await tenantDb(org.id);
   await db.delete(companies).where(and(eq(companies.id, String(formData.get("id"))), eq(companies.orgId, org.id)));
   revalidatePath("/companies");
   redirect("/companies");

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { and, asc, eq, sql } from "drizzle-orm";
 import { Users } from "lucide-react";
 import { requireUser } from "@/lib/auth";
-import { getDb, schema } from "@/lib/db";
+import { tenantDb, schema } from "@/lib/db";
 import { fullName, money, relativeTime } from "@/lib/format";
 import { matchWords } from "@/lib/search";
 import { Avatar, Card, EmptyState, PageHeader, Table, Td, Th } from "@/components/ui";
@@ -17,7 +17,7 @@ export default async function ContactsPage({ searchParams }) {
   const { org } = await requireUser();
   const params = await searchParams;
   const q = typeof params.q === "string" ? params.q.trim() : "";
-  const db = await getDb();
+  const db = await tenantDb(org.id);
 
   const filters = [eq(contacts.orgId, org.id)];
   if (q) filters.push(matchWords(q, [contacts.firstName, contacts.lastName, contacts.email, contacts.phone, contacts.title, companies.name]));
