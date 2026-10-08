@@ -195,8 +195,19 @@ test("Settings: add a pipeline stage", async () => {
   await expect(p.locator('input[aria-label="Stage name"][value="Legal review"]')).toBeVisible();
 });
 
-test("Settings: add a teammate with a temporary password", async () => {
+test("Settings: upload a profile photo, cropped in the browser", async () => {
   const p = (shown = s.owner);
+  // A 2x2 PNG is enough for the cropper; it's scaled up to the 320px square that gets saved.
+  const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFklEQVR4nGPgz9nbtu09Q9u29/w5ewEtSgbHHd/w/AAAAABJRU5ErkJggg==", "base64");
+  await p.locator('input[type="file"]').setInputFiles({ name: "me.png", mimeType: "image/png", buffer: png });
+  await dialog(p).getByRole("button", { name: "Use photo" }).click();
+  await expect(p.locator('header img[src^="/profile-photo/"]')).toBeVisible();
+});
+
+test("Team: add a teammate with a temporary password", async () => {
+  const p = (shown = s.owner);
+  await p.getByRole("link", { name: "Team", exact: true }).first().click();
+  await expect(p).toHaveURL(/\/team/);
   await p.getByRole("button", { name: "Add teammate" }).click();
   const d = dialog(p);
   await d.locator('input[name="name"]').fill("Manu Member");
@@ -205,6 +216,7 @@ test("Settings: add a teammate with a temporary password", async () => {
   await d.getByRole("button", { name: "Add teammate" }).click();
   await expect(p.getByText("Manu Member can now sign in")).toBeVisible();
   await expect(p.getByText(MATE)).toBeVisible();
+  await expect(p.getByRole("row", { name: /Manu Member/ }).getByText("Invited")).toBeVisible();
 });
 
 // ---------- Owner: companies, contacts, leads ----------
@@ -406,8 +418,10 @@ test("Teammate: first sign-in, own password, sees the shared workspace", async (
 
 test("Teammate: members can't manage the team", async () => {
   const p = (shown = s.mate);
-  await go(p, "/settings");
+  await go(p, "/team");
+  await expect(p.getByText(MATE)).toBeVisible();
   await expect(p.getByRole("button", { name: "Add teammate" })).toHaveCount(0);
+  await expect(p.getByRole("button", { name: /Make (admin|member)/ })).toHaveCount(0);
 });
 
 test("Security: 5 wrong passwords lock the account", async () => {
