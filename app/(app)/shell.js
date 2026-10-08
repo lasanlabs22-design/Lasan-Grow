@@ -16,7 +16,9 @@ import {
   Plus,
   Search,
   Settings,
+  UserRound,
   Users,
+  UsersRound,
   X,
   CornerDownLeft,
 } from "lucide-react";
@@ -80,6 +82,10 @@ function SideNav({ orgName, onNavigate }) {
           <NavItem key={item.href} {...item} active={isActive(item.href)} onNavigate={onNavigate} />
         ))}
       </nav>
+      <p className="mb-1 mt-4 px-3 text-[11px] font-semibold uppercase tracking-wide text-ink-3">Organization</p>
+      <nav className="space-y-0.5">
+        <NavItem href="/team" label="Team" icon={UsersRound} active={isActive("/team")} onNavigate={onNavigate} />
+      </nav>
       <div className="mt-auto border-t border-line pt-2">
         <NavItem href="/settings" label="Settings" icon={Settings} active={isActive("/settings")} onNavigate={onNavigate} />
       </div>
@@ -111,13 +117,13 @@ function AccountMenu({ user, orgName }) {
         aria-label={`Account: ${user.name}`}
         className="flex h-9 items-center gap-2 rounded-md px-1.5 text-suite-ink hover:bg-white/10"
       >
-        <Avatar name={user.name} size={28} />
+        <Avatar src={user.photo} name={user.name} size={28} />
         <ChevronDown size={14} className={cx("hidden opacity-80 transition-transform sm:block", open && "rotate-180")} />
       </button>
       {open && (
         <div className="absolute right-0 z-50 mt-1.5 w-64 overflow-hidden rounded-md border border-line bg-surface text-ink shadow-pop">
           <div className="flex items-center gap-3 border-b border-line px-4 py-3">
-            <Avatar name={user.name} size={36} />
+            <Avatar src={user.photo} name={user.name} size={36} />
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold">{user.name}</p>
               <p className="truncate text-xs text-ink-3">{user.email}</p>
@@ -126,6 +132,20 @@ function AccountMenu({ user, orgName }) {
               </p>
             </div>
           </div>
+          <Link
+            href="/settings#profile"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-surface-2"
+          >
+            <UserRound size={15} className="text-ink-3" /> Profile & photo
+          </Link>
+          <Link
+            href="/team"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-surface-2"
+          >
+            <UsersRound size={15} className="text-ink-3" /> Team
+          </Link>
           <Link
             href="/settings"
             onClick={() => setOpen(false)}
