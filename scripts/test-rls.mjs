@@ -1,8 +1,8 @@
 /**
  * Proves row-level security keeps workspaces apart, at the database level.
  *
- * Creates two throwaway workspaces (A and B) with a user, stage, company, contact, lead, deal and
- * activity each, then acts as the app's restricted role pinned to A and tries to read, change,
+ * Creates two throwaway workspaces (A and B) with a user, profile photo, stage, company, contact,
+ * lead, deal and activity each, then acts as the app's restricted role pinned to A and tries to read, change,
  * delete and forge B's data. Everything runs in one transaction that is rolled back, so it leaves
  * nothing behind and is safe to run against production.
  *
@@ -67,6 +67,7 @@ try {
       await q("insert into leads (id, org_id, name) values ($1, $2, 'Lead')", [id(org, 5), org]);
       await q("insert into deals (id, org_id, title, stage_id) values ($1, $2, 'Deal', $3)", [id(org, 6), org, id(org, 2)]);
       await q("insert into activities (id, org_id, subject) values ($1, $2, 'Call')", [id(org, 7), org]);
+      await q("insert into user_photos (user_id, org_id, data) values ($1, $2, 'data:image/png;base64,AAAA')", [id(org, 1), org]);
     }
 
     // --- From here on we are the app, signed in to workspace A ---
@@ -81,7 +82,7 @@ try {
         await q("rollback to savepoint probe");
       }
     };
-    const tables = ["users", "companies", "contacts", "leads", "stages", "deals", "activities"];
+    const tables = ["users", "user_photos", "companies", "contacts", "leads", "stages", "deals", "activities"];
 
     for (const t of tables) {
       const r = await as(A, () => q(`select org_id from ${t} where org_id in ($1, $2)`, [A, B]));
@@ -110,6 +111,14 @@ try {
     {
       const r = await as(A, () => q("update users set password_hash = 'owned' where email like 'rls-%' returning org_id"));
       check("users: A can't change B's passwords", r.ok && r.value.every((u) => u.org_id === A), JSON.stringify(r));
+    }
+    {
+      const r = await as(A, () => q("update user_photos set data = 'data:image/png;base64,BBBB' where user_id = $1 returning user_id", [id(B, 1)]));
+      check("user_photos: A can't replace B's profile photo", r.ok && r.value.length === 0, JSON.stringify(r));
+    }
+    {
+      const r = await as(A, () => q("insert into user_photos (user_id, org_id, data) values ($1, $2, 'data:image/png;base64,CCCC')", [id(B, 1), B]));
+      check("user_photos: A can't add a photo inside B", !r.ok && /row-level security/.test(r.error), JSON.stringify(r));
     }
     {
       const r = await as(A, () => q("select id from organizations where id in ($1, $2)", [A, B]));
