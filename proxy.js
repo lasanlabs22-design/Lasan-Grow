@@ -11,6 +11,7 @@ const APP_PREFIXES = [
   "/deals",
   "/tasks",
   "/settings",
+  "/team",
   "/welcome",
   "/change-password",
 ];

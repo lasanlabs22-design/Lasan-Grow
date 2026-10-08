@@ -81,7 +81,23 @@ export function Badge({ tone = "neutral", className, children }) {
 
 const AVATAR_TONES = ["bg-s1", "bg-s2", "bg-s3", "bg-s4", "bg-s5", "bg-s7"];
 
-export function Avatar({ name = "", size = 32, className }) {
+// `src` is a profile photo (see photoUrl in lib/photos.js); without one, the initials show.
+export function Avatar({ name = "", src, size = 32, className }) {
+  if (src) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- small same-origin photos, already sized
+      <img
+        src={src}
+        alt=""
+        aria-hidden
+        width={size}
+        height={size}
+        loading="lazy"
+        style={{ width: size, height: size }}
+        className={cx("inline-block shrink-0 rounded-full bg-surface-2 object-cover", className)}
+      />
+    );
+  }
   const tone = AVATAR_TONES[[...name].reduce((a, c) => a + c.charCodeAt(0), 0) % AVATAR_TONES.length];
   return (
     <span

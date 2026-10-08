@@ -7,8 +7,9 @@ import { revalidatePath } from "next/cache";
 import { requireUser, startSession } from "@/lib/auth";
 import { tenantDb, schema } from "@/lib/db";
 import { hashPassword, passwordProblem } from "@/lib/passwords";
+import { MAX_PHOTO_CHARS, PHOTO_DATA_URL } from "@/lib/photos";
 
-const { users, organizations, stages, deals, activities, leads, contacts, companies } = schema;
+const { users, userPhotos, organizations, stages, deals, activities, leads, contacts, companies } = schema;
 
 async function requireAdmin() {
   const current = await requireUser();
@@ -27,6 +28,24 @@ export async function updateProfile(_prev, formData) {
   await db.update(users).set({ name }).where(eq(users.id, user.id));
   revalidatePath("/", "layout");
   return ok("Profile saved");
+}
+
+// `dataUrl` is the cropped 320px photo from the browser, or null to remove it.
+export async function saveProfilePhoto(dataUrl) {
+  const { user } = await requireUser();
+  const db = await tenantDb(user.orgId);
+  if (dataUrl === null) {
+    await db.delete(userPhotos).where(eq(userPhotos.userId, user.id));
+  } else {
+    if (typeof dataUrl !== "string" || !PHOTO_DATA_URL.test(dataUrl)) return fail("Upload a PNG, JPG or WEBP image");
+    if (dataUrl.length > MAX_PHOTO_CHARS) return fail("That image is too large. Try a smaller photo.");
+    await db
+      .insert(userPhotos)
+      .values({ userId: user.id, orgId: user.orgId, data: dataUrl })
+      .onConflictDoUpdate({ target: userPhotos.userId, set: { data: dataUrl, updatedAt: new Date() } });
+  }
+  revalidatePath("/", "layout");
+  return ok(dataUrl ? "Photo saved" : "Photo removed");
 }
 
 export async function changePassword(_prev, formData) {
@@ -135,61 +154,6 @@ export async function deleteStage(id) {
   await db.delete(stages).where(eq(stages.id, id));
   revalidatePath("/settings");
   revalidatePath("/deals");
-  return { ok: true };
-}
-
-// ---------- Team ----------
-
-const teammateSchema = z.object({
-  name: z.string().trim().min(2, "Add their name"),
-  email: z.email("Enter a valid email").transform((e) => e.toLowerCase()),
-  password: z.string(),
-  role: z.enum(["admin", "member"]),
-});
-
-export async function addTeammate(_prev, formData) {
-  let org;
-  try {
-    ({ org } = await requireAdmin());
-  } catch (e) {
-    return fail(e.message);
-  }
-  const parsed = teammateSchema.safeParse({
-    name: formData.get("name"),
-    email: String(formData.get("email") ?? "").trim(),
-    password: formData.get("password"),
-    role: formData.get("role") || "member",
-  });
-  if (!parsed.success) return fail(parsed.error.issues[0].message);
-  const problem = passwordProblem(parsed.data.password);
-  if (problem) return fail(`Temporary password: ${problem.toLowerCase()}`);
-  const db = await tenantDb(org.id);
-  try {
-    await db.insert(users).values({
-      orgId: org.id,
-      name: parsed.data.name,
-      email: parsed.data.email,
-      role: parsed.data.role,
-      passwordHash: await hashPassword(parsed.data.password),
-      // They choose their own password the first time they sign in.
-      mustChangePassword: true,
-    });
-  } catch (e) {
-    // Emails are unique across all workspaces. Row-level security hides other workspaces' users,
-    // so the database's unique index is what spots a clash.
-    if ((e?.code ?? e?.cause?.code) === "23505") return fail("That email already has an account");
-    throw e;
-  }
-  revalidatePath("/settings");
-  return ok(`${parsed.data.name} can now sign in, and will be asked to choose their own password`);
-}
-
-export async function removeTeammate(id) {
-  const { user, org } = await requireAdmin();
-  if (id === user.id) return { error: "You can't remove yourself" };
-  const db = await tenantDb(org.id);
-  await db.delete(users).where(and(eq(users.id, id), eq(users.orgId, org.id), sql`${users.role} <> 'owner'`));
-  revalidatePath("/settings");
   return { ok: true };
 }
 

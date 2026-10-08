@@ -1,26 +1,26 @@
 "use client";
 
-import { useActionState, useState, useSyncExternalStore, useTransition } from "react";
+import { useActionState, useRef, useState, useSyncExternalStore, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { AlertCircle, ArrowDown, ArrowUp, CheckCircle2, Monitor, Moon, Sun, Trash2, UserPlus } from "lucide-react";
+import { AlertCircle, ArrowDown, ArrowUp, Camera, CheckCircle2, Loader2, Monitor, Moon, Sun, Trash2 } from "lucide-react";
 import { Avatar, Badge, Button, Card, Field, Input, Select, cx } from "@/components/ui";
 import { Modal, SubmitButton } from "@/components/client";
+import { PhotoCropper, toPhotoDataUrl } from "@/components/photo-cropper";
 import {
-  addTeammate,
   changePassword,
   clearWorkspaceData,
   deleteStage,
   moveStage,
-  removeTeammate,
+  saveProfilePhoto,
   saveStage,
   updateProfile,
   updateWorkspace,
 } from "./actions";
 
-export function SettingsSection({ title, description, danger, children }) {
+export function SettingsSection({ id, title, description, danger, children }) {
   return (
-    <Card className={cx("grid gap-5 p-6 md:grid-cols-[240px_1fr]", danger && "border-bad/30")}>
+    <Card id={id} className={cx("grid scroll-mt-16 gap-5 p-6 md:grid-cols-[240px_1fr]", danger && "border-bad/30")}>
       <div>
         <h2 className={cx("font-semibold", danger && "text-bad")}>{title}</h2>
         <p className="mt-1 text-sm text-ink-3">{description}</p>
@@ -40,6 +40,98 @@ function Status({ state }) {
     <p role="status" className="flex items-center gap-1.5 text-sm text-good">
       <CheckCircle2 size={14} /> {state.message}
     </p>
+  );
+}
+
+export function PhotoUploader({ name, photo }) {
+  const input = useRef(null);
+  const router = useRouter();
+  const [pending, start] = useTransition();
+  const [error, setError] = useState(null);
+  const [preview, setPreview] = useState(null);
+  // The photo just picked, waiting to be positioned in the cropper.
+  const [picked, setPicked] = useState(null);
+
+  const choose = (file) => {
+    setError(null);
+    if (input.current) input.current.value = ""; // so picking the same file again still opens the cropper
+    if (!file) return;
+    if (!/^image\/(png|jpe?g|webp)$/.test(file.type)) return setError("Use a PNG, JPG or WEBP image.");
+    if (file.size > 10 * 1024 * 1024) return setError("Pick an image under 10 MB.");
+    setPicked(file);
+  };
+
+  const save = (bitmap, rect) => {
+    let dataUrl;
+    try {
+      dataUrl = toPhotoDataUrl(bitmap, rect);
+    } catch (e) {
+      setPicked(null);
+      return setError(e.message);
+    }
+    start(async () => {
+      setPreview(dataUrl);
+      const res = await saveProfilePhoto(dataUrl);
+      setPicked(null);
+      if (res.error) {
+        setPreview(null);
+        setError(res.error);
+      } else router.refresh(); // the suite bar and Team page pick up the new photo
+    });
+  };
+
+  const remove = () =>
+    start(async () => {
+      const res = await saveProfilePhoto(null);
+      if (res.error) return setError(res.error);
+      setPreview(null);
+      router.refresh();
+    });
+
+  const shown = preview ?? photo;
+  return (
+    <div className="mb-5 flex items-center gap-4 border-b border-line pb-5">
+      <div className="group relative">
+        <Avatar src={shown} name={name} size={72} />
+        <button
+          type="button"
+          onClick={() => input.current?.click()}
+          disabled={pending}
+          className="absolute inset-0 grid place-items-center rounded-full bg-black/55 text-white opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+          aria-label="Change photo"
+        >
+          {pending ? <Loader2 size={20} className="animate-spin" /> : <Camera size={20} />}
+        </button>
+        <input ref={input} type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" onChange={(e) => choose(e.target.files?.[0])} />
+      </div>
+      <div className="min-w-0">
+        <p className="text-sm font-semibold">Profile photo</p>
+        <p className="text-xs text-ink-3">Shown to your team. PNG, JPG or WEBP.</p>
+        <div className="mt-2 flex gap-2">
+          <Button type="button" variant="secondary" size="sm" onClick={() => input.current?.click()} disabled={pending}>
+            <Camera size={13} /> {shown ? "Change photo" : "Upload photo"}
+          </Button>
+          {shown && (
+            <Button type="button" variant="ghost" size="sm" className="hover:text-bad" onClick={remove} disabled={pending}>
+              <Trash2 size={13} /> Remove
+            </Button>
+          )}
+        </div>
+        {error && (
+          <p role="alert" className="mt-2 flex items-center gap-1.5 text-xs text-bad">
+            <AlertCircle size={13} /> {error}
+          </p>
+        )}
+      </div>
+      <Modal
+        open={Boolean(picked)}
+        onClose={() => !pending && setPicked(null)}
+        title="Position your photo"
+        description="Only what's inside the circle is saved."
+      >
+        {picked && <PhotoCropper file={picked} busy={pending} onCancel={() => setPicked(null)} onCrop={save} />}
+      </Modal>
+    </div>
   );
 }
 
@@ -272,110 +364,6 @@ export function StageEditor({ stages, disabled }) {
           </SubmitButton>
           {addState?.error && <span className="w-full text-xs text-bad">{addState.error}</span>}
         </form>
-      )}
-    </div>
-  );
-}
-
-function TeammateForm({ onDone }) {
-  const [state, action] = useActionState(async (prev, fd) => {
-    const res = await addTeammate(prev, fd);
-    if (res.ok) onDone(res.message);
-    return res;
-  }, null);
-  return (
-    <form action={action} className="space-y-4">
-      {state?.error && <Status state={state} />}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Name">
-          <Input name="name" required />
-        </Field>
-        <Field label="Email">
-          <Input name="email" type="email" required />
-        </Field>
-        <Field label="Temporary password" hint="8+ characters with a letter and a number. Share it privately; they choose their own when they first sign in.">
-          <Input name="password" type="text" minLength={8} required />
-        </Field>
-        <Field label="Role">
-          <Select name="role" defaultValue="member">
-            <option value="member">Member</option>
-            <option value="admin">Admin</option>
-          </Select>
-        </Field>
-      </div>
-      <div className="flex justify-end gap-2">
-        <Button type="button" variant="ghost" onClick={onDone}>
-          Cancel
-        </Button>
-        <SubmitButton pendingText="Adding…">Add teammate</SubmitButton>
-      </div>
-    </form>
-  );
-}
-
-export function TeamManager({ team, currentUserId, canManage }) {
-  const router = useRouter();
-  const [open, setOpen] = useState(false);
-  const [notice, setNotice] = useState(null);
-  const [, startTransition] = useTransition();
-  return (
-    <div>
-      <ul className="divide-y divide-line">
-        {team.map((m) => (
-          <li key={m.id} className="flex items-center gap-3 py-3">
-            <Avatar name={m.name} size={34} />
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">
-                {m.name} {m.id === currentUserId && <span className="font-normal text-ink-3">(you)</span>}
-              </p>
-              <p className="truncate text-xs text-ink-3">{m.email}</p>
-            </div>
-            <Badge tone={m.role === "owner" ? "ink" : "outline"} className="capitalize">
-              {m.role}
-            </Badge>
-            {canManage && m.role !== "owner" && m.id !== currentUserId && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="hover:text-bad"
-                aria-label={`Remove ${m.name}`}
-                onClick={() => {
-                  if (!window.confirm(`Remove ${m.name}? They lose access to this workspace straight away.`)) return;
-                  startTransition(async () => {
-                    await removeTeammate(m.id);
-                    setNotice(`${m.name} was removed.`);
-                    router.refresh();
-                  });
-                }}
-              >
-                <Trash2 size={14} />
-              </Button>
-            )}
-          </li>
-        ))}
-      </ul>
-      {notice && (
-        <p role="status" className="mt-2 flex items-center gap-1.5 text-sm text-good">
-          <CheckCircle2 size={14} /> {notice}
-        </p>
-      )}
-      {canManage && (
-        <>
-          <Button variant="secondary" size="sm" className="mt-3" onClick={() => setOpen(true)}>
-            <UserPlus size={14} /> Add teammate
-          </Button>
-          <Modal open={open} onClose={() => setOpen(false)} title="Add a teammate" description="They'll share this workspace's leads, deals and contacts." wide>
-            {() => (
-              <TeammateForm
-                onDone={(message) => {
-                  setOpen(false);
-                  setNotice(message);
-                  router.refresh();
-                }}
-              />
-            )}
-          </Modal>
-        </>
       )}
     </div>
   );
